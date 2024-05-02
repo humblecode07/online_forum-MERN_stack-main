@@ -1,0 +1,4 @@
+const jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImNhbGRlcm9uLm1pa28uMDAxNDlAZHljaS5lZHUucGgiLCJyb2xlcyI6WyJBZG1pbiIsIlN0dWRlbnQiXSwidXNlcklkIjoiNjVlZDc3OWYxOTZjYmM5ZDgwMzIzOTk2IiwiaWF0IjoxNzEyNzk3MzE1LCJleHAiOjE3MTI5NzAxMTV9.in4vaP69FQQqYAZCr89VatCSQLx0fG-Uefs-h9aeAng";
+
+const decodedPayload = JSON.parse(atob(jwt.split('.')[1]));
+console.log(decodedPayload);
