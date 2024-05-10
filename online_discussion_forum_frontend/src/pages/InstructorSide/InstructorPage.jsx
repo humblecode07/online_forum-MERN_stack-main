@@ -34,6 +34,8 @@ const InstructorPage = () => {
     }
   }, [location]);
 
+  console.log(window.location.href)
+
   return (
     <Box
       height={"100dvh"}
