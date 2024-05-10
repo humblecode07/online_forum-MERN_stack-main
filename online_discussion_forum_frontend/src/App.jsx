@@ -40,7 +40,7 @@ import { PostProvider } from './context/PostContext';
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<RootLayout />}>
-      <Route path='/login' element={<Login />} />
+      <Route path='/' element={<Home />} />
       <Route path='/login' element={<Login />} />
 
       <Route element={<PersistLogin />}>
