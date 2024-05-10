@@ -117,7 +117,6 @@ const UserAccount = () => {
                             'Content-Type': 'multipart/form-data'
                         }
                     });
-                    window.location.reload();
                 } catch (error) {
                     console.error('Error uploading avatar:', error);
                     // Handle error if upload fails
@@ -149,7 +148,6 @@ const UserAccount = () => {
                 email: email
             });
             console.log(response.data);
-            window.location.reload()
         } catch (error) {
             if (error.response) {
                 console.log(error.response.data);
@@ -206,7 +204,6 @@ const UserAccount = () => {
                 bio: bio
             });
             console.log(response.data);
-            window.location.reload();
         } catch (error) {
             if (error.response) {
                 console.log(error.response.data);

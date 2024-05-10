@@ -146,7 +146,6 @@ export function Comment({ _id, user, profile, content, upvotes, downvotes, image
       const response = await axiosPrivate.delete(`/forums/${forumPost}/threads/${threadPost}/comments/${_id}`);
       console.log(response.data); // log the response if needed
       handleCloseModal(); // close the modal after successful submission
-      window.location.reload()
     } catch (error) {
       if (error.response) {
         console.log(error.response.data);
