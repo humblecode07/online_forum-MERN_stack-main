@@ -1,16 +1,19 @@
-// import { useEffect, useState } from "react";
-// import axios from "axios";
+import { Button } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
+  const navigate = useNavigate();
   
-
   return (
     <>
-      <div>
-        This is home page
-      </div>
+      this is home page
+      <Button onClick={() => {
+        navigate('/login');
+      }}> 
+        click to go to login
+      </Button>
     </>
-  )
-}
+  );
+};
 
-export default HomePage
+export default HomePage;
