@@ -63,8 +63,8 @@ const BulletinBoard = () => {
   };
 
   return (
-    <Box display={'flex'} flexDirection={'column'}>
-        <Stack direction={'row'} justifyContent={'flex-start'} sx={{ marginRight: '50px', marginBottom: '20px' }}>
+    <Box display={'flex'} flexDirection={'column'} width={'65dvw'}>
+        <Stack direction={'row'} justifyContent={'space-between'} sx={{ marginBottom: '20px' }}>
         <Typography variant="h5" sx={{ fontWeight: '700', fontSize: '30px', paddingRight: '50%' }}>Bulletin Board List</Typography>
         <CreateBoard />
       </Stack>
@@ -127,7 +127,7 @@ const BulletinBoard = () => {
                       component="img"
                       onClick={() => handleForumClick(forum._id)}
                       style={{ borderTopRightRadius: '8px', borderBottomRightRadius: '8px', height: '100%', width: '32dvw', objectFit: 'cover', marginRight: '20px', cursor: 'pointer' }}
-                      image={forum.image !== '' ? `http://localhost:3000/${forum.image}` : 'https://fakeimg.pl/200x100/?retina=1&text=こんにちは&font=noto'}
+                      image={forum.image !== '' ? `http://localhost:3000/images/${forum.image}` : 'https://fakeimg.pl/200x100/?retina=1&text=こんにちは&font=noto'}
                       alt={`Image`}
                     />
                   </Box>

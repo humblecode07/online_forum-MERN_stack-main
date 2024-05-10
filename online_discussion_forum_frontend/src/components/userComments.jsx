@@ -10,6 +10,7 @@ import useAuth from '../hooks/useAuth';
 const UserComments = () => {
   const [comments, setComments] = useState([]);
   const { studentId } = useParams();
+  const { instructorId } = useParams();
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
   const location = useLocation();
@@ -23,22 +24,41 @@ const UserComments = () => {
 
     const getUsers = async () => {
       try {
-        const response = await axiosPrivate.get(`/users/${studentId}`, {
-          signal: controller.signal
-        });
-        if (response.data && response.data.user && response.data.user.length > 0) {
-          const userData = response.data.user[0];
-          const studentData = {
-            _id: userData._id,
-            comments: userData.comments
+        let response;
+
+        if (window.location.pathname.includes('/student')) {
+          response = await axiosPrivate.get(`/users/${studentId}`, {
+            signal: controller.signal
+          });
+
+          if (response.data && response.data.user && response.data.user.length > 0) {
+            const userData = response.data.user[0];
+            const studentData = {
+              _id: userData._id,
+              comments: userData.comments
+            }
+            isMounted && setComments(studentData);
           }
-          isMounted && setComments(studentData);
+          console.log(response);
+        }
+        else if (window.location.pathname.includes('/instructor/')) {
+          response = await axiosPrivate.get(`/instructors/${instructorId}`, {
+            signal: controller.signal
+          });
+          if (response.data && response.data.instructor && response.data.instructor.length > 0) {
+            const userData = response.data.instructor[0];
+            const studentData = {
+              _id: userData._id,
+              comments: userData.comments
+            }
+            isMounted && setComments(studentData);
+          }
         }
       } catch (err) {
-        console.log(err)
+        console.log(err);
         navigate('/admin/login', { state: { from: location }, replace: true });
       }
-    }
+    }; 
 
     getUsers();
 
@@ -46,7 +66,8 @@ const UserComments = () => {
       isMounted = false;
       controller.abort();
     }
-  }, [axiosPrivate, studentId, navigate, location]);
+  }, [axiosPrivate, studentId, instructorId, navigate, location]);
+
 
   const formatRelativeTime = (timestamp) => {
     const timestampDate = new Date(timestamp);
@@ -80,21 +101,21 @@ const UserComments = () => {
   }
 
   const handleStudentClick = (forumId, threadId) => {
-		if (decoded.roles.includes('Admin')) {
-			if (!window.location.pathname.startsWith('/client')) {
-				// If the current path does not start with '/client', navigate to the admin page
-				navigate(`/admin/${forumId}/${threadId}`)
-			}
-			else {
-				navigate(`/client/${forumId}/${threadId}`)
-			}
-		} else if (decoded.roles.includes('Instructor')) {
-			navigate(`/instructor/${forumId}/${threadId}`)
-		} else if (decoded.roles.includes('Student')) {
-			console.log('reached');
+    if (decoded.roles.includes('Admin')) {
+      if (!window.location.pathname.startsWith('/client')) {
+        // If the current path does not start with '/client', navigate to the admin page
+        navigate(`/admin/${forumId}/${threadId}`)
+      }
+      else {
+        navigate(`/client/${forumId}/${threadId}`)
+      }
+    } else if (decoded.roles.includes('Instructor')) {
+      navigate(`/instructor/${forumId}/${threadId}`)
+    } else if (decoded.roles.includes('Student')) {
+      console.log('reached');
       navigate(`/client/${forumId}/${threadId}`)
-		}
-	};
+    }
+  };
 
   return (
     <>
@@ -116,7 +137,7 @@ const UserComments = () => {
                 <Stack height={'100%'} direction={'row'} alignItems={'center'} justifyContent={'space-between'}>
                   <CardContent sx={{ width: '100%' }} style={{ cursor: 'pointer' }}>
                     <Stack direction={'row'} spacing={2} marginBottom={'8px'}>
-                      <Typography fontWeight={700} fontSize={'14px'} >f/{comment.forumPost.name}</Typography>
+                      <Typography fontWeight={700} fontSize={'14px'} >f/{comment?.forumPost?.name}</Typography>
                       <Typography
                         sx={{
                           overflow: 'hidden',

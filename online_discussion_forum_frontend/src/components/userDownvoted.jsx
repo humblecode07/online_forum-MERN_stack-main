@@ -12,6 +12,7 @@ import { jwtDecode } from 'jwt-decode';
 const UserDownvoted = () => {
   const [downvoted, setDownvoted] = useState([]);
   const { studentId } = useParams();
+  const { instructorId } = useParams();
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
   const location = useLocation();
@@ -25,16 +26,36 @@ const UserDownvoted = () => {
 
     const getUsers = async () => {
       try {
-        const response = await axiosPrivate.get(`/users/${studentId}`, {
-          signal: controller.signal
-        });
-        if (response.data && response.data.user && response.data.user.length > 0) {
-          const userData = response.data.user[0];
-          const studentData = {
-            _id: userData._id,
-            downvotedThreads: userData.downvotedThreads
+        let response;
+
+        if (window.location.pathname.includes('/student')) {
+          response = await axiosPrivate.get(`/users/${studentId}`, {
+            signal: controller.signal
+          });
+
+          if (response.data && response.data.user && response.data.user.length > 0) {
+            const userData = response.data.user[0];
+            const studentData = {
+              _id: userData._id,
+              downvoteds: userData.downvotedThreadsdThrea
+            }
+            isMounted && setDownvoted(studentData);
           }
-          isMounted && setDownvoted(studentData);
+          console.log(response)
+        }
+        else if (window.location.pathname.includes('/instructor/')) {
+          response = await axiosPrivate.get(`/instructors/${instructorId}`, {
+            signal: controller.signal
+          });
+
+          if (response.data && response.data.instructor && response.data.instructor.length > 0) {
+            const userData = response.data.instructor[0];
+            const studentData = {
+              _id: userData._id,
+              downvoteds: userData.downvotedThreadsdThrea
+            }
+            isMounted && setDownvoted(studentData);
+          }
         }
       } catch (err) {
         console.log(err)
@@ -48,9 +69,27 @@ const UserDownvoted = () => {
       isMounted = false;
       controller.abort();
     }
-  }, [axiosPrivate, studentId, navigate, location]);
+  }, [axiosPrivate, studentId, instructorId, navigate, location]);
 
   const handleStudentClick = (forumId, threadId) => {
+    (async () => {
+      try {
+        await axiosPrivate.patch(`/forums/${forumId}/threads/${threadId}/checkView`);
+
+      } catch (error) {
+        if (error.response) {
+          console.log(error.response.data);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        } else if (error.request) {
+          console.log(error.request);
+        } else {
+          console.log('Error', error.message);
+        }
+        console.log(error.config);
+      }
+    })();
+
 		if (decoded.roles.includes('Admin')) {
 			if (!window.location.pathname.startsWith('/client')) {
 				// If the current path does not start with '/client', navigate to the admin page
@@ -139,7 +178,7 @@ const UserDownvoted = () => {
                   <CardMedia
                     component="img"
                     style={{ borderRadius: '30px', height: '150px', width: '200px', objectFit: 'none', marginRight: '20px' }}
-                    image={downvote.image && downvote.image[0] ? `http://localhost:3000/${downvote.image[0]}` : 'https://fakeimg.pl/200x100/?retina=1&text=こんにちは&font=noto'}
+                    image={downvote.image && downvote.image[0] ? `http://localhost:3000/images/${downvote.image[0]}` : 'https://fakeimg.pl/200x100/?retina=1&text=こんにちは&font=noto'}
                   />
                 </Stack>
               </Card>

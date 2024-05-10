@@ -18,6 +18,8 @@ export function CommentList({ comments }) {
       return <NoCommentsMessage />;
     }
 
+    console.log(comments)
+
     return (
       <>
         {comments.map(comment => (

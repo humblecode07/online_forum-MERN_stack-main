@@ -35,7 +35,7 @@ const CreateStudent = () => {
     setBirthday(date);
   };
 
-  const [schoolId, setSchoolId] = useState();
+  const [schoolId, setSchoolId] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -70,25 +70,32 @@ const CreateStudent = () => {
 
   useEffect(() => {
     const controller = new AbortController();
-
+  
     const fetchStudentData = async () => {
       try {
         const response = await axiosPrivate.get(`/instructors/`, {
           signal: controller.signal
         });
 
-        setInstructors(response.data);
+        console.log(response.data)
+  
+        if (Array.isArray(response.data.instructors)) {
+          setInstructors(response.data.instructors);
+        } else {
+          console.error("Response data is not an array:", response.data);
+        }
       } catch (err) {
         console.error(err);
       }
     };
-
+  
     fetchStudentData();
-
+  
     return () => {
       controller.abort();
     };
   }, [axiosPrivate]);
+  
 
   const addStudent = async () => {
     const formData = new FormData();
@@ -108,7 +115,6 @@ const CreateStudent = () => {
     selectedFiles.forEach((file) => {
       formData.append('profile', file);
     });
-
 
     try {
       const response = await axiosPrivate.post('/users', formData, {
@@ -394,12 +400,12 @@ const CreateStudent = () => {
               <Select
                 labelId="instructor-option-label"
                 value={instructor}
-                onChange={handleInstructorChange}
+                onChange={handleInstructorChange} // Ensure onChange handler is provided
                 variant="outlined"
                 fullWidth={true}
                 required
               >
-                {instructors?.instructors?.map((instructor) => (
+                {instructors.map((instructor) => (
                   <MenuItem key={instructor._id} value={instructor._id}>
                     {instructor.first_name} {instructor.family_name}
                   </MenuItem>

@@ -1,4 +1,5 @@
 const User = require('../models/users');
+const Instructor = require('../models/instructor');
 const Forum = require('../models/forums');
 const Thread = require('../models/threads');
 const Comment = require('../models/comments');
@@ -39,61 +40,77 @@ exports.forum_get_one = asyncHandler(async (req, res, next) => {
 /* Create forum */
 exports.forum_create = asyncHandler(async (req, res, next) => {
     const user = await User.findById(req.userId);
+    const instructor = await Instructor.findById(req.userId);
 
-    // Check if required fields are present in the request body
     if (!req.body.name || !req.body.description) {
         return res.status(400).json({ message: "Name and description are required" });
     }
 
     let imageUUID = '';
-
-    console.log('image a', req.file)
-
     if (req.file) {
         const originalFilename = req.file.originalname;
         const fileExtension = originalFilename.split('.').pop();
         imageUUID = uuidv4() + '.' + fileExtension;
 
-        const readStream = fs.createReadStream(req.file.path);
-        const uploadStream = global.gridFSBucket.openUploadStream(imageUUID);
+        try {
+            const readStream = fs.createReadStream(req.file.path);
+            const uploadStream = global.gridFSBucket.openUploadStream(imageUUID);
 
-        readStream.pipe(uploadStream);
+            readStream.pipe(uploadStream);
 
-        uploadStream.on('error', (error) => {
-            console.error('Error uploading file:', error);
-            res.status(500).json({ message: "Failed to upload file" });
-        });
+            uploadStream.on('error', (error) => {
+                console.error('Error uploading file:', error);
+                res.status(500).json({ message: "Failed to upload file" });
+            });
 
-        uploadStream.on('finish', async () => {
-            console.log('File uploaded successfully');
-        });
+            uploadStream.on('finish', () => {
+                console.log('File uploaded successfully');
+            });
 
-        readStream.on('error', (error) => {
-            console.error('Error reading file:', error);
-            res.status(500).json({ message: "Failed to read file" });
-        });
+            readStream.on('error', (error) => {
+                console.error('Error reading file:', error);
+                res.status(500).json({ message: "Failed to read file" });
+            });
+        } catch (error) {
+            console.error('Error handling file upload:', error);
+            res.status(500).json({ message: "Failed to handle file upload" });
+        }
     }
 
-    // Use current time as creation time
     const creationTime = new Date();
+
+    let forumCreator;
+    if (user) {
+        forumCreator = user;
+    } else if (instructor) {
+        forumCreator = instructor;
+    } else {
+        return res.status(400).json({ message: "User or instructor not found" });
+    }
 
     const forum = new Forum({
         _id: new mongoose.Types.ObjectId(),
-        user: user._id,
+        user: forumCreator._id,
         name: req.body.name,
         image: imageUUID, // Use the same UUID for the image
-        creator: user.first_name + " " + user.family_name,
+        creator: forumCreator.first_name + " " + forumCreator.family_name,
         description: req.body.description,
         creationTime: creationTime,
-        type: req.body.type
+        type: req.body.type // Validate if necessary
     });
 
-    await forum.save();
-
-    return res.status(200).json({
-        message: "Forum, " + req.body.name + ", has been created",
-    });
+    // Save forum instance
+    try {
+        await forum.save();
+        return res.status(200).json({
+            message: "Forum, " + req.body.name + ", has been created",
+        });
+    } catch (error) {
+        console.error('Error saving forum:', error);
+        return res.status(500).json({ message: "Failed to create forum" });
+    }
 });
+
 
 
 /* Edit forum detail */

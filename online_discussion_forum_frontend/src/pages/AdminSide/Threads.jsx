@@ -16,7 +16,24 @@ const Threads = () => {
   const { forumId } = useParams();
 
   const handleThreadClick = (threadId) => {
-    console.log(`/admin/${forumId}/${threadId}`)
+    (async () => {
+      try {
+        await axiosPrivate.patch(`/forums/${forumId}/threads/${threadId}/checkView`);
+
+      } catch (error) {
+        if (error.response) {
+          console.log(error.response.data);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        } else if (error.request) {
+          console.log(error.request);
+        } else {
+          console.log('Error', error.message);
+        }
+        console.log(error.config);
+      }
+    })();
+
     navigate(`/admin/${forumId}/${threadId}/`);
   }
 

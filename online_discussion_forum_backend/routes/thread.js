@@ -55,4 +55,7 @@ router.delete('/:threadId', thread_controller.thread_delete);
 /* Upvote or Dowvote: UPDATE request for thread */
 router.patch('/:threadId/vote', thread_controller.thread_vote);
 
+/* Check view: UPDATE request for thread */
+router.patch('/:threadId/checkView', thread_controller.thread_check_view);
+
 module.exports = router;

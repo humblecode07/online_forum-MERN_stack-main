@@ -13,11 +13,14 @@ const UserThreads = () => {
   const [threads, setThreads] = useState([]);
   const { auth } = useAuth()
   const { studentId } = useParams();
+  const { instructorId } = useParams();
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
   const location = useLocation();
 
   const decoded = auth?.accessToken ? jwtDecode(auth.accessToken) : undefined
+
+  console.log(studentId)
 
   useEffect(() => {
     let isMounted = true;
@@ -25,16 +28,70 @@ const UserThreads = () => {
 
     const getUsers = async () => {
       try {
-        const response = await axiosPrivate.get(`/users/${studentId}`, {
-          signal: controller.signal
-        });
-        if (response.data && response.data.user && response.data.user.length > 0) {
-          const userData = response.data.user[0];
-          const studentData = {
-            _id: userData._id,
-            threads: userData.threads
+        let response;
+
+        if (window.location.pathname.includes('/admin/student') || window.location.pathname.includes('/client')) {
+          if (window.location.pathname.includes('/client/instructor')) {
+            response = await axiosPrivate.get(`/instructors/${instructorId}`, {
+              signal: controller.signal
+            });
+  
+            if (response.data && response.data.instructor && response.data.instructor.length > 0) {
+              const userData = response.data.instructor[0];
+              const studentData = {
+                _id: userData._id,
+                threads: userData.threads
+              }
+              isMounted && setThreads(studentData);
+            }
           }
-          isMounted && setThreads(studentData);
+          else {
+            response = await axiosPrivate.get(`/users/${studentId}`, {
+              signal: controller.signal
+            });
+  
+            if (response.data && response.data.user && response.data.user.length > 0) {
+              const userData = response.data.user[0];
+              const studentData = {
+                _id: userData._id,
+                threads: userData.threads
+              }
+              isMounted && setThreads(studentData);
+            }
+          }
+
+          
+          console.log(response)
+        }
+        else if (window.location.pathname.includes('/instructor/')) {
+          if (window.location.pathname.includes('/instructor/student')) {
+            response = await axiosPrivate.get(`/users/${studentId}`, {
+              signal: controller.signal
+            });
+
+            if (response.data && response.data.user && response.data.user.length > 0) {
+              const userData = response.data.user[0];
+              const studentData = {
+                _id: userData._id,
+                threads: userData.threads
+              }
+              isMounted && setThreads(studentData);
+            }
+          }
+          else {
+            response = await axiosPrivate.get(`/instructors/${instructorId}`, {
+              signal: controller.signal
+            });
+
+            if (response.data && response.data.instructor && response.data.instructor.length > 0) {
+              const userData = response.data.instructor[0];
+              const studentData = {
+                _id: userData._id,
+                threads: userData.threads
+              }
+              isMounted && setThreads(studentData);
+            }
+          }
         }
       } catch (err) {
         console.log(err)
@@ -48,12 +105,29 @@ const UserThreads = () => {
       isMounted = false;
       controller.abort();
     }
-  }, [axiosPrivate, studentId, navigate, location]);
+  }, [axiosPrivate, studentId, instructorId, navigate, location]);
 
   const handleStudentClick = (forumId, threadId) => {
+    (async () => {
+      try {
+        await axiosPrivate.patch(`/forums/${forumId}/threads/${threadId}/checkView`);
+
+      } catch (error) {
+        if (error.response) {
+          console.log(error.response.data);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        } else if (error.request) {
+          console.log(error.request);
+        } else {
+          console.log('Error', error.message);
+        }
+        console.log(error.config);
+      }
+    });
+
 		if (decoded.roles.includes('Admin')) {
 			if (!window.location.pathname.startsWith('/client')) {
-				// If the current path does not start with '/client', navigate to the admin page
 				navigate(`/admin/${forumId}/${threadId}`)
 			}
 			else {
@@ -132,7 +206,7 @@ const UserThreads = () => {
                   <CardMedia
                     component="img"
                     style={{ borderRadius: '30px', height: '150px', width: '200px', objectFit: 'none', marginRight: '20px' }}
-                    image={thread.image && thread.image[0] ? `http://localhost:3000/${thread.image[0]}` : 'https://fakeimg.pl/200x100/?retina=1&text=こんにちは&font=noto'}
+                    image={thread.image && thread.image[0] ? `http://localhost:3000/images/${thread.image[0]}` : 'https://fakeimg.pl/200x100/?retina=1&text=こんにちは&font=noto'}
                   />
                 </Stack>
               </Card>

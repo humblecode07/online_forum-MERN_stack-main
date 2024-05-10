@@ -12,7 +12,15 @@ const StudentList = () => {
 	const location = useLocation();
 
 	const handleStudentClick = (studentId) => {
-		navigate(`/admin/student/${studentId}/`)
+		if (window.location.pathname.startsWith('/admin')) {
+			navigate(`/admin/student/${studentId}/`)
+		}
+		else if (window.location.pathname.startsWith('/instructor')) {
+			navigate(`/instructor/student/${studentId}/`)
+		}
+		else if (window.location.pathname.startsWith('/client')) {
+			navigate(`/client/student/${studentId}/`)
+		}
 	}
 
 	useEffect(() => {

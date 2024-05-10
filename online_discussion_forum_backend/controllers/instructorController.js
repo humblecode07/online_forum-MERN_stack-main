@@ -44,6 +44,7 @@ exports.instructor_get_one = asyncHandler(async (req, res, next) => {
         })
         .populate('upvotedThreads')
         .populate('downvotedThreads')
+        .populate('students')
         .exec();
 
     if (!instructor) {
@@ -179,4 +180,4 @@ exports.instructor_delete = asyncHandler(async (req, res, next) => {
         message: "Instructor info and associated data have been deleted.",
         user: deletedInstructor
     });
-})
+});

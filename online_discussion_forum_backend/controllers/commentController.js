@@ -1,4 +1,5 @@
 const User = require('../models/users');
+const Instructor = require('../models/instructor')
 const Thread = require('../models/threads');
 const Comment = require('../models/comments');
 const mongoose = require('mongoose');
@@ -53,6 +54,7 @@ exports.comment_get_one = asyncHandler(async (req, res, next) => {
 /* Create a comment on a certain thread */
 exports.comment_create = asyncHandler(async (req, res, next) => {
     const user = await User.findById(req.userId);
+    const instructor = await Instructor.findById(req.userId);
 
     let imageUUID = '';
 
@@ -81,11 +83,20 @@ exports.comment_create = asyncHandler(async (req, res, next) => {
         });
     }
 
+    let commentCreator;
+    if (user) {
+        commentCreator = user;
+    } else if (instructor) {
+        commentCreator = instructor;
+    } else {
+        return res.status(400).json({ message: "User or instructor not found" });
+    }
+
     const comment = new Comment({
         _id: new mongoose.Types.ObjectId(),
-        user: user._id,
-        username: user.user_name,
-        profile: user.profile,
+        user: commentCreator._id,
+        username: commentCreator.user_name,
+        profile: commentCreator.profile,
         forumPost: req.forumId,
         threadPost: req.threadId,
         parentId: null,
@@ -103,10 +114,17 @@ exports.comment_create = asyncHandler(async (req, res, next) => {
         { new: true }
     );
 
-    await User.findByIdAndUpdate(req.userId, 
-        { $push: { comments: comment._id } }, 
-        { new: true }
-    )
+    if (user) {
+        await User.findByIdAndUpdate(req.userId, 
+            { $push: { comments: comment._id } }, 
+            { new: true }
+        )
+    } else if (instructor) {
+        await Instructor.findByIdAndUpdate(req.userId, 
+            { $push: { comments: comment._id } }, 
+            { new: true }
+        )
+    } 
 
     return res.status(200).json({
         message: "Comment has been created",
@@ -114,8 +132,10 @@ exports.comment_create = asyncHandler(async (req, res, next) => {
 });
 
 
+
 exports.reply_create = asyncHandler(async (req, res, next) => {
     const user = await User.findById(req.userId);
+    const instructor = await Instructor.findById(req.userId);
     const commentParent = await Comment.findById(req.params.commentId);
 
     let image = '';
@@ -124,11 +144,20 @@ exports.reply_create = asyncHandler(async (req, res, next) => {
         image = req.files[0].path;
     }
 
+    let commentCreator;
+    if (user) {
+        commentCreator = user;
+    } else if (instructor) {
+        commentCreator = instructor;
+    } else {
+        return res.status(400).json({ message: "User or instructor not found" });
+    }
+
     const comment = new Comment({
         _id: new mongoose.Types.ObjectId(),
-        user: user._id,
-        username: user.user_name,
-        profile: user.profile,
+        user: commentCreator._id,
+        username: commentCreator.user_name,
+        profile: commentCreator.profile,
         forumPost: req.forumId,
         threadPost: req.threadId,
         parentId: commentParent._id,
@@ -154,12 +183,21 @@ exports.reply_create = asyncHandler(async (req, res, next) => {
         { new: true }
     );
 
-    await User.findByIdAndUpdate(req.userId,
-        {
-            $push: { comments: comment._id },
-        },
-        { new: true }
-    );
+    if (user) {
+        await User.findByIdAndUpdate(req.userId,
+            {
+                $push: { comments: comment._id },
+            },
+            { new: true }
+        );
+    } else if (instructor) {
+        await Instructor.findByIdAndUpdate(req.userId,
+            {
+                $push: { comments: comment._id },
+            },
+            { new: true }
+        );
+    } 
 
     return res.status(200).json({
         message: "Comment has been created",
@@ -198,6 +236,9 @@ exports.comment_delete = asyncHandler(async (req, res, next) => {
     const threadId = req.threadId;
     const commentId = req.params.commentId;
 
+    const user = await User.findById(req.userId);
+    const instructor = await Instructor.findById(req.userId);
+
     // Function to recursively delete nested replies and update parent comments
     const deleteRepliesAndUpdateParentComments = async (commentId) => {
         const comment = await Comment.findById(commentId);
@@ -212,19 +253,34 @@ exports.comment_delete = asyncHandler(async (req, res, next) => {
                 { $pull: { replies: commentId }, $inc: { commentCount: -1 } },
                 { new: true }
             );
-            await User.findByIdAndUpdate(req.userId,
-                { $pull: { comments: commentId } },
-                { new: true }
-            );
+            if (user) {
+                await User.findByIdAndUpdate(req.userId,
+                    { $pull: { comments: commentId } },
+                    { new: true }
+                );
+            } else if (instructor) {
+                await Instructor.findByIdAndUpdate(req.userId,
+                    { $pull: { comments: commentId } },
+                    { new: true }
+                );
+            }  
         }
         // Remove the comment from its parent's replies array
         if (comment.parentId) {
             await Comment.findByIdAndUpdate(comment.parentId, {
                 $pull: { replies: commentId }
             });
-            await User.findByIdAndUpdate(req.userId, {
-                $pull: { comments: commentId }
-            });
+            if (user) {
+                await User.findByIdAndUpdate(req.userId,
+                    { $pull: { comments: commentId } },
+                    { new: true }
+                );
+            } else if (instructor) {
+                await Instructor.findByIdAndUpdate(req.userId,
+                    { $pull: { comments: commentId } },
+                    { new: true }
+                );
+            }
         }
     };
 
@@ -238,31 +294,44 @@ exports.comment_delete = asyncHandler(async (req, res, next) => {
         { new: true }
     );
 
-    await User.findByIdAndUpdate(req.userId,
-        { $pull: { comments: commentId } },
-        { new: true }
-    );
-
-    // Implement storage for deleted comments.
+    if (user) {
+        await User.findByIdAndUpdate(req.userId,
+            { $pull: { comments: commentId } },
+            { new: true }
+        );
+    } else if (instructor) {
+        await Instructor.findByIdAndUpdate(req.userId,
+            { $pull: { comments: commentId } },
+            { new: true }
+        );
+    } 
 
     return res.status(200).json({
         message: "Comment and its nested replies have been deleted."
     });
 });
 
-
+/* Vote a comment on a certain thread */
 exports.comment_vote = asyncHandler(async (req, res, next) => {
     const user = await User.findById(req.userId);
-
-    console.log('userid:', user._id)
+    const instructor = await Instructor.findById(req.userId);
 
     const comment = await Comment.findById(req.params.commentId);
     if (!comment) {
         return res.status(404).json({ message: "Comment not found." });
     }
 
-    const alreadyUpvoted = comment.upvotedBy.includes(user._id);
-    const alreadyDownvoted = comment.downvotedBy.includes(user._id);
+    let voter;
+    if (user) {
+        voter = user;
+    } else if (instructor) {
+        voter = instructor;
+    } else {
+        return res.status(400).json({ message: "User or instructor not found" });
+    }
+
+    const alreadyUpvoted = comment.upvotedBy.includes(voter._id);
+    const alreadyDownvoted = comment.downvotedBy.includes(voter._id);
 
     if (req.body.vote === 'upvote') {
         if (alreadyUpvoted) {
@@ -276,15 +345,15 @@ exports.comment_vote = asyncHandler(async (req, res, next) => {
             // User has already downvoted, remove the downvote and add the upvote
             await Comment.findByIdAndUpdate(req.params.commentId, {
                 $inc: { downvotes: -1, upvotes: 1 },
-                $pull: { downvotedBy: user._id },
-                $addToSet: { upvotedBy: user._id }
+                $pull: { downvotedBy: voter._id },
+                $addToSet: { upvotedBy: voter._id }
             });
             res.status(200).json({ message: "Comment upvoted successfully." });
         } else {
             // User hasn't upvoted yet, add the upvote
             await Comment.findByIdAndUpdate(req.params.commentId, {
                 $inc: { upvotes: 1 },
-                $addToSet: { upvotedBy: user._id }
+                $addToSet: { upvotedBy: voter._id }
             });
             res.status(200).json({ message: "Comment upvoted successfully." });
         }
@@ -293,22 +362,22 @@ exports.comment_vote = asyncHandler(async (req, res, next) => {
             // User has already downvoted, remove the downvote
             await Comment.findByIdAndUpdate(req.params.commentId, {
                 $inc: { downvotes: -1 },
-                $pull: { downvotedBy: user._id }
+                $pull: { downvotedBy: voter._id }
             });
             res.status(200).json({ message: "Comment downvote removed successfully." });
         } else if (alreadyUpvoted) {
             // User has already upvoted, remove the upvote and add the downvote
             await Comment.findByIdAndUpdate(req.params.commentId, {
                 $inc: { upvotes: -1, downvotes: 1 },
-                $pull: { upvotedBy: user._id },
-                $addToSet: { downvotedBy: user._id }
+                $pull: { upvotedBy: voter._id },
+                $addToSet: { downvotedBy: voter._id }
             });
             res.status(200).json({ message: "Comment downvoted successfully." });
         } else {
             // User hasn't downvoted yet, add the downvote
             await Comment.findByIdAndUpdate(req.params.commentId, {
                 $inc: { downvotes: 1 },
-                $addToSet: { downvotedBy: user._id }
+                $addToSet: { downvotedBy: voter._id }
             });
             res.status(200).json({ message: "Comment downvoted successfully." });
         }

@@ -17,7 +17,7 @@ const RequireAuth = ({ allowedRoles }) => {
             ? <Outlet />
             : auth?.accessToken
                 ? <Navigate to="/unauthorized" state={{ from: location }} replace />
-                : !window.location.pathname.startsWith('/client') ? <Navigate to="/admin/login" state={{ from: location }} replace /> : <Navigate to="/login" state={{ from: location }} replace />
+                : !window.location.pathname.startsWith('/client') ? <Navigate to="/login" state={{ from: location }} replace /> : <Navigate to="/login" state={{ from: location }} replace />
     );
 }
 

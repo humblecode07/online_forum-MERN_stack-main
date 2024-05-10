@@ -16,8 +16,8 @@ const StudentThreads = () => {
   const { forumId } = useParams();
 
   const handleThreadClick = (threadId) => {
-    console.log(`/client/${forumId}/${threadId}`)
-    navigate(`/client/${forumId}/${threadId}/`);
+    console.log(`/client/student/${forumId}/${threadId}`)
+    navigate(`/client/student/${forumId}/${threadId}/`);
   }
 
   const handleVote = async (id, vote) => {

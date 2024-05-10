@@ -1,4 +1,5 @@
 const User = require('../models/users');
+const Instructor = require('../models/instructor')
 const Forum = require('../models/forums');
 const Thread = require('../models/threads');
 const Comment = require('../models/comments');
@@ -109,11 +110,26 @@ exports.user_post_create = asyncHandler(async (req, res, next) => {
             });
 
             const savedUser = await user.save();
-            console.log(savedUser);
+
+            const instructor = await Instructor.findById(user.officer);
+
+            console.log(instructor)
+
+            if (instructor) {
+                if (!instructor.students) {
+                    instructor.students = []; 
+                }
+                instructor.students.push(user._id);
+                await instructor.save();
+            } else {
+                console.log("Instructor not found");
+            }
+
             return res.status(201).json({
                 message: "User created"
             });
         });
+
 
         readStream.on('error', (error) => {
             console.error('Error reading file:', error);

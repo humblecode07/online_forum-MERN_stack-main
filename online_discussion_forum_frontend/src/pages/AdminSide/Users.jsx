@@ -16,7 +16,7 @@ const Users = () => {
     };
 
     return (
-        <Box sx={{ width: '55dvw', typography: 'body1' }}>
+        <Box sx={{ width: '65dvw', typography: 'body1' }}>
             <Stack direction={'row'} justifyContent={'space-between'} sx={{
                 marginBottom: '20px',
             }}>

@@ -160,9 +160,10 @@ const Forums = () => {
   console.log(forums)
 
   return (
-    <Box display={'flex'} flexDirection={'column'}>
-      <Stack direction={'row'} justifyContent={'flex-start'} sx={{ marginRight: '50px', marginBottom: '20px' }}>
+    <Box display={'flex'} flexDirection={'column'} width={'65dvw'}>
+      <Stack direction={'row'} justifyContent={'space-between'} sx={{ marginBottom: '20px' }}>
         <Typography variant="h5" sx={{ fontWeight: '700', fontSize: '30px', paddingRight: '60%' }}>Forums List</Typography>
+        
         <CreateForum />
       </Stack>
 

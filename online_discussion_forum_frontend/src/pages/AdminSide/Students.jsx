@@ -59,7 +59,7 @@ const Students = () => {
                 }
             } catch (err) {
                 console.error(err);
-                navigate('/admin/login', { state: { from: location }, replace: true });
+                navigate('/login', { state: { from: location }, replace: true });
             }
         };
 
@@ -69,8 +69,6 @@ const Students = () => {
             controller.abort();
         };
     }, [axiosPrivate, studentId, navigate, location]);
-
-    
 
     const handleStudentClick = () => {
         if (decoded.roles.includes('Admin')) {
@@ -82,7 +80,7 @@ const Students = () => {
                 navigate(`/client/student/${studentId}/settings`)
             }
         } else if (decoded.roles.includes('Instructor')) {
-            navigate(`/instructor/${studentId}/settings`)
+            navigate(`/instructor/student/${studentId}/settings`)
         } else if (decoded.roles.includes('Student')) {
             console.log('reached');
             navigate(`/client/student/${studentId}/settings`)
@@ -108,15 +106,18 @@ const Students = () => {
                             <Typography fontWeight={'700'} fontSize={'25px'}>{student.first_name + ' ' + student.family_name}</Typography>
                             <Typography>{student.user_name}</Typography>
                         </Stack>
-                        <Button variant='contained' sx={{
-                            width: '20%'
-                        }}
-                            onClick={() => {
-                                handleStudentClick();
+                        {decoded.roles.includes('Admin') || decoded.userId === studentId ? (
+                            <Button variant='contained' sx={{
+                                width: '20%'
                             }}
-                        >
-                            Edit Profile
-                        </Button>
+                                onClick={() => {
+                                    handleStudentClick();
+                                }}
+                            >
+                                Edit Profile
+                            </Button>
+                        ) : ''}
+
                     </Stack>
                 )}
                 <Stack direction={'row'} gap={5} justifyContent={'center'}>

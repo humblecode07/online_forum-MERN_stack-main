@@ -11,7 +11,15 @@ const InstructorsList = () => {
   const location = useLocation();
 
   const handleInstructorClick = (instructorId) => {
-    navigate(`/admin/instructor/${instructorId}/`)
+    if (window.location.pathname.startsWith('/admin')) {
+      navigate(`/admin/instructor/${instructorId}/`)
+    }
+    else if (window.location.pathname.startsWith('/instructor')) {
+      navigate(`/instructor/profile/${instructorId}/`)
+    }
+    else if (window.location.pathname.startsWith('/client')) {
+      navigate(`/client/instructor/${instructorId}/`)
+    }
   }
 
   useEffect(() => {
@@ -42,7 +50,7 @@ const InstructorsList = () => {
         isMounted && setInstructors(instructorData);
       } catch (err) {
         console.log(err)
-        navigate('/admin/login', { state: { from: location }, replace: true });
+        navigate('/login', { state: { from: location }, replace: true });
       }
     }
 

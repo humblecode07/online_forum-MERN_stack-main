@@ -12,6 +12,7 @@ import { jwtDecode } from 'jwt-decode';
 const UserUpvoted = () => {
   const [upvoted, setUpvoted] = useState([]);
   const { studentId } = useParams();
+  const { instructorId } = useParams();
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
   const location = useLocation();
@@ -25,20 +26,40 @@ const UserUpvoted = () => {
 
     const getUsers = async () => {
       try {
-        const response = await axiosPrivate.get(`/users/${studentId}`, {
-          signal: controller.signal
-        });
-        if (response.data && response.data.user && response.data.user.length > 0) {
-          const userData = response.data.user[0];
-          const studentData = {
-            _id: userData._id,
-            upvotedThreads: userData.upvotedThreads
+        let response;
+
+        if (window.location.pathname.includes('/student')) {
+          response = await axiosPrivate.get(`/users/${studentId}`, {
+            signal: controller.signal
+          });
+
+          if (response.data && response.data.user && response.data.user.length > 0) {
+            const userData = response.data.user[0];
+            const studentData = {
+              _id: userData._id,
+              upvotedThreads: userData.upvotedThreads
+            }
+            isMounted && setUpvoted(studentData);
           }
-          isMounted && setUpvoted(studentData);
+          console.log(response)
+        }
+        else if (window.location.pathname.includes('/instructor/')) {
+          response = await axiosPrivate.get(`/instructors/${instructorId}`, {
+            signal: controller.signal
+          });
+
+          if (response.data && response.data.instructor && response.data.instructor.length > 0) {
+            const userData = response.data.instructor[0];
+            const studentData = {
+              _id: userData._id,
+              upvotedThreads: userData.upvotedThreads
+            }
+            isMounted && setUpvoted(studentData);
+          }
         }
       } catch (err) {
         console.log(err)
-        navigate('/admin/login', { state: { from: location }, replace: true });
+        navigate('/login', { state: { from: location }, replace: true });
       }
     }
 
@@ -48,24 +69,42 @@ const UserUpvoted = () => {
       isMounted = false;
       controller.abort();
     }
-  }, [axiosPrivate, studentId, navigate, location]);
+  }, [axiosPrivate, studentId, instructorId, navigate, location]);
 
   const handleStudentClick = (forumId, threadId) => {
-		if (decoded.roles.includes('Admin')) {
-			if (!window.location.pathname.startsWith('/client')) {
-				// If the current path does not start with '/client', navigate to the admin page
-				navigate(`/admin/${forumId}/${threadId}`)
-			}
-			else {
-				navigate(`/client/${forumId}/${threadId}`)
-			}
-		} else if (decoded.roles.includes('Instructor')) {
-			navigate(`/instructor/${forumId}/${threadId}`)
-		} else if (decoded.roles.includes('Student')) {
-			console.log('reached');
+    (async () => {
+      try {
+        await axiosPrivate.patch(`/forums/${forumId}/threads/${threadId}/checkView`);
+
+      } catch (error) {
+        if (error.response) {
+          console.log(error.response.data);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        } else if (error.request) {
+          console.log(error.request);
+        } else {
+          console.log('Error', error.message);
+        }
+        console.log(error.config);
+      }
+    })();
+
+    if (decoded.roles.includes('Admin')) {
+      if (!window.location.pathname.startsWith('/client')) {
+        // If the current path does not start with '/client', navigate to the admin page
+        navigate(`/admin/${forumId}/${threadId}`)
+      }
+      else {
+        navigate(`/client/${forumId}/${threadId}`)
+      }
+    } else if (decoded.roles.includes('Instructor')) {
+      navigate(`/instructor/${forumId}/${threadId}`)
+    } else if (decoded.roles.includes('Student')) {
+      console.log('reached');
       navigate(`/client/${forumId}/${threadId}`)
-		}
-	};
+    }
+  };
 
   return (
     <>
@@ -139,7 +178,7 @@ const UserUpvoted = () => {
                   <CardMedia
                     component="img"
                     style={{ borderRadius: '30px', height: '150px', width: '200px', objectFit: 'none', marginRight: '20px' }}
-                    image={upvote.image && upvote.image[0] ? `http://localhost:3000/${upvote.image[0]}` : 'https://fakeimg.pl/200x100/?retina=1&text=こんにちは&font=noto'}
+                    image={upvote.image && upvote.image[0] ? `http://localhost:3000/images/${upvote.image[0]}` : 'https://fakeimg.pl/200x100/?retina=1&text=こんにちは&font=noto'}
                   />
                 </Stack>
               </Card>

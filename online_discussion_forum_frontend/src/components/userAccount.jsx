@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom/dist/umd/react-router-dom.development';
 import useAxiosPrivate from '../hooks/useAxiosPrivate';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { jwtDecode } from 'jwt-decode';
+import useAuth from '../hooks/useAuth';
 
 const style = {
     position: 'absolute',
@@ -28,6 +30,10 @@ const UserAccount = () => {
     const navigate = useNavigate();
     const location = useLocation();
     const { studentId } = useParams();
+    const { instructorId } = useParams();
+
+    const { auth } = useAuth()
+    const decoded = auth?.accessToken ? jwtDecode(auth.accessToken) : undefined
 
     const handleBioChange = (event) => {
         setBio(event.target.value);
@@ -48,30 +54,47 @@ const UserAccount = () => {
 
         const fetchStudentData = async () => {
             try {
-                const response = await axiosPrivate.get(`/users/${studentId}`, {
-                    signal: controller.signal
-                });
+                let response;
 
-                if (response.data && response.data.user && response.data.user.length > 0) {
-                    const userData = response.data.user[0];
-                    setStudent(userData);
-                    setBio(userData.bio || '');
+                if (window.location.pathname.includes('/student')) {
+                    response = await axiosPrivate.get(`/users/${studentId}`, {
+                        signal: controller.signal
+                    });
 
-                    if (userData.officer) {
-                        const instructorResponse = await axiosPrivate.get(`/instructors/${userData.officer}`, {
-                            signal: controller.signal
-                        });
+                    if (response.data && response.data.user && response.data.user.length > 0) {
+                        const userData = response.data.user[0];
+                        setStudent(userData);
+                        setBio(userData.bio || '');
 
-                        if (instructorResponse.data) {
-                            setInstructor(instructorResponse.data);
+                        if (userData.officer) {
+                            const instructorResponse = await axiosPrivate.get(`/instructors/${userData.officer}`, {
+                                signal: controller.signal
+                            });
+
+                            if (instructorResponse.data) {
+                                setInstructor(instructorResponse.data);
+                            }
                         }
+                    } else {
+                        throw new Error('Response data is empty or missing user information');
                     }
-                } else {
-                    throw new Error('Response data is empty or missing user information');
+                }
+                else if (window.location.pathname.includes('/instructor/')) {
+                    response = await axiosPrivate.get(`/instructors/${instructorId}`, {
+                        signal: controller.signal
+                    });
+
+                    if (response.data && response.data.instructor && response.data.instructor.length > 0) {
+                        const userData = response.data.instructor[0];
+                        setStudent(userData);
+                        setBio(userData.bio || '');
+                    } else {
+                        throw new Error('Response data is empty or missing user information');
+                    }
                 }
             } catch (err) {
                 console.error(err);
-                navigate('/admin/login', { state: { from: location }, replace: true });
+                navigate('/login', { state: { from: location }, replace: true });
             }
         };
 
@@ -344,27 +367,42 @@ const UserAccount = () => {
                     </Stack>
                     <Button onClick={updateBio} variant='outlined' sx={{ borderRadius: '20px', width: '15%' }}>Change</Button>
                 </Stack>
-                <Stack direction={'row'} justifyContent={'space-between'} marginBottom={'20px'}>
-                    <Stack>
-                        <Typography fontWeight={500}>Education Level</Typography>
-                        <Typography fontSize={'12px'}>{student?.department}</Typography>
-                    </Stack>
-                    <Button variant='outlined' sx={{ borderRadius: '20px' }}>Change</Button>
-                </Stack>
-                <Stack direction={'row'} justifyContent={'space-between'} marginBottom={'20px'}>
-                    <Stack>
-                        <Typography fontWeight={500}>Grade Level</Typography>
-                        <Typography fontSize={'12px'}>{student?.year_level} {student?.department === 'College Level' ? 'Year' : 'Grade'}</Typography>
-                    </Stack>
-                    <Button variant='outlined' sx={{ borderRadius: '20px' }}>Change</Button>
-                </Stack>
-                <Stack direction={'row'} justifyContent={'space-between'} marginBottom={'20px'}>
-                    <Stack>
-                        <Typography fontWeight={500}>Instructor</Typography>
-                        <Typography fontSize={'12px'}>{instructor?.instructor[0]?.first_name} {instructor?.instructor[0]?.family_name}</Typography>
-                    </Stack>
-                    <Button variant='outlined' sx={{ borderRadius: '20px' }}>Change</Button>
-                </Stack>
+                {student?.role.includes('Student') ? (
+                    <>
+                        <Stack direction={'row'} justifyContent={'space-between'} marginBottom={'20px'}>
+                            <Stack>
+                                <Typography fontWeight={500}>Education Level</Typography>
+                                <Typography fontSize={'12px'}>{student?.department}</Typography>
+                            </Stack>
+                            <Button variant='outlined' sx={{ borderRadius: '20px' }}>Change</Button>
+                        </Stack>
+                        <Stack direction={'row'} justifyContent={'space-between'} marginBottom={'20px'}>
+                            <Stack>
+                                <Typography fontWeight={500}>Grade Level</Typography>
+                                <Typography fontSize={'12px'}>{student?.year_level} {student?.department === 'College Level' ? 'Year' : 'Grade'}</Typography>
+                            </Stack>
+                            <Button variant='outlined' sx={{ borderRadius: '20px' }}>Change</Button>
+                        </Stack>
+                        <Stack direction={'row'} justifyContent={'space-between'} marginBottom={'20px'}>
+                            <Stack>
+                                <Typography fontWeight={500}>Instructor</Typography>
+                                <Typography fontSize={'12px'}>{instructor?.instructor[0]?.first_name} {instructor?.instructor[0]?.family_name}</Typography>
+                            </Stack>
+                            <Button variant='outlined' sx={{ borderRadius: '20px' }}>Change</Button>
+                        </Stack>
+                    </>
+                ) : (
+                    <>
+                       <Stack direction={'row'} justifyContent={'space-between'} marginBottom={'20px'}>
+                            <Stack>
+                                <Typography fontWeight={500}>Subjects</Typography>
+                                <Typography fontSize={'12px'}>{student?.subjects}</Typography>
+                            </Stack>
+                            <Button variant='outlined' sx={{ borderRadius: '20px' }}>Change</Button>
+                        </Stack>  
+                    </>
+                )}
+
                 <Stack direction={'row'} justifyContent={'space-between'} marginBottom={'20px'}>
                     <Stack>
                         <Typography fontWeight={500}>Birthday</Typography>

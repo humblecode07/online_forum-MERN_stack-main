@@ -11,6 +11,7 @@ import photoOne from '../image/1.jpg'
 import photoTwo from '../image/2.jpg'
 import photoThree from '../image/3.jpg'
 import photoFour from '../image/4.jpg'
+import { jwtDecode } from 'jwt-decode';
 
 
 const LOGIN_URL = '/login';
@@ -36,23 +37,33 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     try {
       const response = await axios.post(LOGIN_URL,
         JSON.stringify({ email: email, password: pwd }), {
         headers: { 'Content-Type': 'application/json' },
         withCredentials: true
-      }
-      );
-
+      });
+  
       const accessToken = response.data.token;
-
-      console.log("response: ", response.data)
+      const decodedToken = jwtDecode(accessToken);
+      const { roles } = decodedToken;
+  
+      console.log("User roles:", roles);
+  
       setAuth({ email, accessToken });
-      navigate('/client')
-    }
-    catch (err) {
-      err => console.log(err);
+      if (roles.includes("Admin")) {
+        navigate('/admin/dashboard')
+      }
+      else if (roles.includes("Instructor")) {
+        navigate('/instructor/bulletin$board');
+      } else if (roles.includes("Student")) {
+        navigate('/client');
+      } else {
+        setErrMsg('Unknown role.');
+      }
+    } catch (err) {
+      console.error(err);
       setErrMsg('Error occurred while logging in.');
     }
   }

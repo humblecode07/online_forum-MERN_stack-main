@@ -38,9 +38,7 @@ const StudentComments = () => {
   const decoded = auth?.accessToken ? jwtDecode(auth.accessToken) : undefined
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
-
-  console.log(post.thread.user)
-
+  
   const [isEditing, setIsEditing] = useState(false)
   const [openEdit, setOpenEdit] = useState(false); // For Editing Modal
   const [threadTitle, setThreadTitle] = useState(thread.title);
@@ -176,7 +174,7 @@ const StudentComments = () => {
                 alignItems: 'center',
                 fontSize: '.75em'
               }}>
-                <Typography fontSize={'14px'}>f/{thread.forumPost.name} </Typography>
+                <Typography fontSize={'14px'}>f/{thread.forumPost.name}  {console.log(post.thread.user)}</Typography>
                 <Typography fontSize={'14px'}>{thread.edited ? 'edited' : null}</Typography>
                 <Typography fontSize={'14px'}>• {timeOfPost}</Typography>
               </Stack>
@@ -204,6 +202,7 @@ const StudentComments = () => {
               >
                 {decoded.userId === post.thread.user && (
                   <>
+                    
                     <MenuItem
                       onClick={() => {
                         handleClose();

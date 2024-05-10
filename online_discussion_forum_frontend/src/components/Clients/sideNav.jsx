@@ -1,143 +1,112 @@
-import React, { useEffect, useState } from 'react'
-import { Box, Button, Grid, InputLabel, Stack, Typography, Divider } from '@mui/material'
-import IconButton from '@mui/material/IconButton';
-import MenuIcon from '@mui/icons-material/Menu';
+import React, { useEffect, useState } from 'react';
+import { Layout, Menu, Avatar, Affix } from 'antd';
+import { Stack, Typography } from '@mui/material';
+import ForumIcon from '@mui/icons-material/Forum';
+import FilterFramesIcon from '@mui/icons-material/FilterFrames';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import { Link } from 'react-router-dom';
+import useAuth from '../../hooks/useAuth';
+import { jwtDecode } from 'jwt-decode';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
-import { useLocation, useNavigate } from 'react-router-dom/dist/umd/react-router-dom.development';
+import Sider from 'antd/es/layout/Sider';
+
+const { Header } = Layout;
 
 const SideNav = () => {
-  const [forums, setForums] = useState([])
-  const axiosPrivate = useAxiosPrivate();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const [selectedForum, setSelectedForum] = useState(null); // State to track selected forum ID
+    const { auth } = useAuth();
+    const axiosPrivate = useAxiosPrivate();
 
-  const handleForumClick = (forumId) => {
-    setSelectedForum(forumId);
-    navigate(`/client/${forumId}/`)
-  }
+    const [userData, setUserData] = useState(null);
+    const [imageData, setImageData] = useState(null);
+    const decoded = auth?.accessToken ? jwtDecode(auth.accessToken) : undefined;
 
-  useEffect(() => {
-    let isMounted = true;
-    const controller = new AbortController();
+    const getAdmin = async () => {
+        try {
+            const response = await axiosPrivate.get(`/users/${decoded.userId}/`, {
+                headers: { 'Content-Type': 'application/json' },
+                withCredentials: true
+            });
+            const fetchedUserData = response.data;
 
-    const getForums = async () => {
-      try {
-        const response = await axiosPrivate.get('/forums', {
-          signal: controller.signal
-        });
-        const forumData = response.data.forums.map(forum => ({
-          _id: forum._id,
-          forumName: forum.name,
-          creator: forum.creator,
-          image: forum.image,
-          creatorId: forum.user,
-          description: forum.description,
-          creationTime: new Date(forum.creationTime).toLocaleDateString(),
-          threads: forum.threads,
-          type: forum.type
-        }));
-        console.log(forumData)
-        isMounted && setForums(forumData);
-      } catch (err) {
-        console.log(err)
-        navigate('/admin/login', { state: { from: location }, replace: true });
-      }
+            const imageResponse = await axiosPrivate.get(`/images/${fetchedUserData?.user[0]?.profile}`, {
+                responseType: 'blob',
+                withCredentials: true
+            });
+            const imageUrl = URL.createObjectURL(imageResponse.data);
+            setImageData(imageUrl);
+
+            setUserData(fetchedUserData);
+        }
+        catch (err) {
+            console.error('Error fetching user data:', err);
+        }
     }
 
-    getForums();
+    const [collapsed, setCollapsed] = useState(false);
 
-    return () => {
-      isMounted = false;
-      controller.abort();
-    }
-  }, [])
+    useEffect(() => {
+        if (decoded?.userId) {
+            getAdmin();
+        }
+    }, [decoded?.userId]);
 
-  console.log(forums.length)
+    useEffect(() => {
+        const handleResize = () => {
+            setCollapsed(window.innerWidth <= 900);
+        };
 
-  return (
-    <Box
-      position={'fixed'}
-      display={'flex'}
-      flex={1}
-      bgcolor={"#f2f2f2"}
-      flexDirection={"column"}
-      paddingLeft={'1dvw'}
-    >
+        window.addEventListener('resize', handleResize);
 
-      <Box>
-        <Stack spacing={9} direction={'row'} justifyContent={'center'} alignItems={'flex-start'} sx={{
-          paddingTop: '15px',
-          paddingBottom: '10px',
-        }}>
-          <Typography variant="h5" sx={{
-            paddingTop: '10px',
-            paddingBottom: '10px',
-            fontFamily: 'Roboto',
-            fontSize: '20px',
-            fontWeight: 300,
-          }}>DYCI HUB</Typography>
-          <IconButton aria-label="minimize side-nav"><MenuIcon /></IconButton>
-        </Stack>
-        <Divider sx={{ marginBottom: '20px' }} />
-        <Box display={'flex'} flexDirection={'column'} marginBottom={'20px'}>
-          <InputLabel id="bulletin-board-label">Bulletin Board</InputLabel>
-          {forums?.length ? (
-            <Grid container spacing={1} direction={'column'} justifyContent={'flex-start'} alignItems={'flex-start'}>
-              {forums.map((forum) => (
-                <Grid item key={forum._id}>
-                  {forum.type === "Bulletin" ? (
-                    <Button
-                      variant='contained'
-                      onClick={() => handleForumClick(forum._id)}
-                      sx={{
-                        width: '200px',
-                        justifyContent: 'flex-start',
-                        marginBottom: '5px',
-                        backgroundColor: selectedForum === forum._id ? '#1976d2' : 'transparent', // Apply color based on selection
-                        color: selectedForum === forum._id ? 'white' : 'black', // Text color based on selection
-                      }}
-                    >
-                      {forum.forumName}
-                    </Button>
-                  ) : null}
-                </Grid>
-              ))}
-            </Grid>
-          ) : null}
-        </Box>
-        <Box>
-          <InputLabel id="bulletin-board-label">Discussion Forum</InputLabel>
-          {forums?.length ? (
-            <Grid container spacing={1} direction={'column'} justifyContent={'flex-start'} alignItems={'flex-start'}>
-              {forums.map((forum) => (
-                <Grid item key={forum._id}>
-                  {forum.type === "Forums" ? (
-                    <Button
-                      variant='contained'
-                      onClick={() => handleForumClick(forum._id)}
-                      sx={{
-                        width: '200px',
-                        justifyContent: 'flex-start',
-                        marginBottom: '5px',
-                        backgroundColor: selectedForum === forum._id ? '#1976d2' : 'transparent', // Apply color based on selection
-                        color: selectedForum === forum._id ? 'white' : 'black', // Text color based on selection
-                      }}
-                    >
-                      {forum.forumName}
-                    </Button>
-                  ) : null}
-                </Grid>
-              ))}
-            </Grid>
-          ) : null}
-        </Box>
-      </Box>
-      <Box>
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
-      </Box>
-    </Box>
-  )
+    return (
+        <Layout style={{ padding: 0 }}>
+            <Affix offsetTop={0}>
+                <Sider collapsed={collapsed} trigger={null} collapsible className='sidebar' style={{
+                    height: '100dvh',
+                    backgroundColor: '#fff',
+                    boxShadow: '0px 2px 8px rgba(0,0,0,0.08)',
+                }}>
+                    {!collapsed && (
+                        <Stack direction="column" spacing={1} alignItems="center" sx={{ marginBottom: '30px' }}>
+                            <Stack spacing={9} direction={'row'} justifyContent={'space-around'} alignItems={'center'} sx={{ paddingTop: '15px' }}>
+                                <Typography variant="h5" sx={{ paddingTop: '10px', paddingBottom: '10px', fontFamily: 'Roboto', fontSize: '20px', fontWeight: 300 }}>
+                                    DYCI HUB
+                                </Typography>
+                            </Stack>
+                            <Avatar style={{ width: 100, height: 100, bgcolor: 'primary.main' }}>
+                                {userData && userData.user && userData.user.length > 0 && (
+                                    <img src={imageData} alt="Firefly" style={{ borderRadius: '50%' }} />
+                                )}
+                            </Avatar>
+                            <Typography  variant="h3" sx={{ paddingTop: '12px', fontFamily: 'Roboto', fontSize: '25px', fontWeight: 1000 }}>
+                                {userData && userData.user && userData.user.length > 0 && (
+                                    userData.user[0].first_name + ' ' + userData.user[0].family_name
+                                )}
+                            </Typography>
+                            <Typography  variant="body1">
+                                Student
+                            </Typography>
+                        </Stack>
+                    )}
+                    <Menu theme='light'>
+                        <Menu.Item key="bulletin_board" icon={<FilterFramesIcon />}>
+                            <Link to="/client/bulletin$board">Bulletin Board</Link>
+                        </Menu.Item>
+                        <Menu.Item key="disc_forums" icon={<ForumIcon />}>
+                            <Link to="/client/forums">Discussion Forums</Link>
+                        </Menu.Item>
+                        <Menu.Item key="users" icon={<PeopleAltIcon />}>
+                            <Link to="/client/users">Users</Link>
+                        </Menu.Item>
+                    </Menu>
+                </Sider>
+            </Affix>
+        </Layout>
+    );
 }
 
-export default SideNav
+export default SideNav;

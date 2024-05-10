@@ -22,6 +22,24 @@ const Dashboard = () => {
   const axiosPrivate = useAxiosPrivate();
 
   const handleThreadClick = (forumId, threadId) => {
+    (async () => {
+      try {
+        await axiosPrivate.patch(`/forums/${forumId}/threads/${threadId}/checkView`);
+
+      } catch (error) {
+        if (error.response) {
+          console.log(error.response.data);
+          console.log(error.response.status);
+          console.log(error.response.headers);
+        } else if (error.request) {
+          console.log(error.request);
+        } else {
+          console.log('Error', error.message);
+        }
+        console.log(error.config);
+      }
+    })();
+
     console.log(`/admin/${forumId}/${threadId}`)
     navigate(`/admin/${forumId}/${threadId}/`);
   }
