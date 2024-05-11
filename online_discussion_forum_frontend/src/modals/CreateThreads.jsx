@@ -53,6 +53,7 @@ const CreateThreads = ({ threadTitle, threadContent, edit }) => {
                 }
             });
             console.log(response.data); // log the response if needed
+            window.location.reload()
             handleClose(); // close the modal after successful submission
         } catch (error) {
             if (error.response) {

@@ -204,6 +204,7 @@ const UserAccount = () => {
                 bio: bio
             });
             console.log(response.data);
+            window.location.reload();
         } catch (error) {
             if (error.response) {
                 console.log(error.response.data);

@@ -62,6 +62,7 @@ const CommentForm = ({
                 );
             }
             setPostCommentState({ loading: false, error: null });
+            window.location.reload()
         } catch (error) {
             console.error("Error posting comment:", error);
             setPostCommentState({ loading: false, error: error.message });

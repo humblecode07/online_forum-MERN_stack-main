@@ -120,6 +120,7 @@ const Comments = () => {
       });
       console.log(response.data); // log the response if needed
       handleCloseModalEdit();
+      window.location.reload()
     } catch (error) {
       if (error.response) {
         console.log(error.response.data);
