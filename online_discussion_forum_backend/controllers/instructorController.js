@@ -65,7 +65,8 @@ exports.instructor_post_create = asyncHandler(async (req, res, next) => {
     }
 
     try {
-        const hash = await bcrypt.hash(req.body.pass, 10);
+        const salt = bcrypt.genSaltSync(10);
+        const hash = await bcrypt.hashSync(req.body.pass, salt);
 
         // Extract file extension from the original filename
         const originalFilename = req.file.originalname;
@@ -125,8 +126,8 @@ exports.instructor_post_create = asyncHandler(async (req, res, next) => {
 
 exports.instructor_post_changepass = asyncHandler(async (req, res, next) => {
     const { instructorId } = req.params;
-    const salt = await bcrypt.genSalt(10);
-    const hashPassword = await bcrypt.hash(req.body.password, salt)
+    const salt = await bcrypt.genSaltSync(10);
+    const hashPassword = await bcrypt.hashSync(req.body.password, salt)
     const updatedPass = await Instructor.findByIdAndUpdate({ _id: instructorId }, { pass: hashPassword }, { new: true })
 
     if (!updatedPass) {

@@ -68,7 +68,8 @@ exports.user_post_create = asyncHandler(async (req, res, next) => {
     }
 
     try {
-        const hash = await bcrypt.hash(req.body.pass, 10);
+        const salt = bcrypt.genSaltSync(10);
+        const hash = await bcrypt.hashSync(req.body.pass, salt);
 
         // Extract file extension from the original filename
         const originalFilename = req.file.originalname;
@@ -146,8 +147,8 @@ exports.user_post_create = asyncHandler(async (req, res, next) => {
 /* Change user password*/
 exports.user_post_changepass = asyncHandler(async (req, res, next) => {
     const { userId } = req.params;
-    const salt = await bcrypt.genSalt(10);
-    const hashPassword = await bcrypt.hash(req.body.pass, salt)
+    const salt = await bcrypt.genSaltSync(10);
+    const hashPassword = await bcrypt.hashSync(req.body.pass, salt)
     const updatedPass = await User.findByIdAndUpdate({ _id: userId }, { pass: hashPassword }, { new: true })
 
     if (!updatedPass) {

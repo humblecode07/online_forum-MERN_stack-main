@@ -1,7 +1,7 @@
 const User = require('../models/users');
 const Instructor = require('../models/instructor')
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const asyncHandler = require("express-async-handler");
@@ -28,7 +28,7 @@ exports.log_in = asyncHandler(async (req, res, next) => {
   let foundUser = user || instructor;
   if (!foundUser) return res.sendStatus(401);
 
-  const match = await bcrypt.compare(password, foundUser.pass);
+  const match = await bcrypt.compareSync(password, foundUser.pass);
   if (!match) return res.sendStatus(401);
 
   const roles = Object.values(foundUser.role).filter(Boolean);
