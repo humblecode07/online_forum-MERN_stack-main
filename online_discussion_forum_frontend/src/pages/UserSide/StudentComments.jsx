@@ -243,7 +243,7 @@ const StudentComments = () => {
                   key={index}
                   component="img"
                   style={{ borderRadius: '30px', height: 'auto', width: '75%', objectFit: 'cover', marginRight: '20px' }}
-                  image={`http://localhost:3000/${imageUrl}`}
+                  image={`https://dyci-hub-api.vercel.app/images/${imageUrl}`}
                   alt={`Image ${index + 1}`}
                 />
               ))}
@@ -252,7 +252,7 @@ const StudentComments = () => {
                 {thread.image.length === 1 ? <CardMedia
                   component="img"
                   style={{ borderRadius: '30px', height: 'auto', width: '75%', objectFit: 'cover', marginRight: '20px' }}
-                  image={`http://localhost:3000/${thread.image[0]}`}
+                  image={`https://dyci-hub-api.vercel.app/images/${thread.image[0]}`}
                   alt={`Image`}
                 /> : ''}
               </Box>
