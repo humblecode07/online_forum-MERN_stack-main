@@ -164,7 +164,7 @@ export function Comment({ _id, user, profile, content, upvotes, downvotes, image
   return (
     <>
       <Box display={'flex'} flexDirection={'row'} gap={1}>
-        <Avatar src={`http://localhost:3000/images/${profile}`} />
+        <Avatar src={`https://dyci-hub-api.vercel.app/images/${profile}`} />
         <div className="comment">
           <div className="header">
 
@@ -190,7 +190,7 @@ export function Comment({ _id, user, profile, content, upvotes, downvotes, image
               <div>
                 <img
                   style={{ borderRadius: '8px', height: 'auto', width: '25%', objectFit: 'cover' }}
-                  src={`${image ? `http://localhost:3000/images/${image}` : ''}`}
+                  src={`${image ? `https://dyci-hub-api.vercel.app/images/${image}` : ''}`}
                 />
               </div>
             )}

@@ -89,7 +89,7 @@ const StudentList = () => {
 									<Avatar sx={{ width: 100, height: 100, bgcolor: 'primary.main' }}>
 										{user.profile ? (
 											<img
-												src={`http://localhost:3000/images/${user.profile}`}
+												src={`https://dyci-hub-api.vercel.app/images/${user.profile}`}
 												alt="userProfile"
 												style={{
 													width: '100%', 

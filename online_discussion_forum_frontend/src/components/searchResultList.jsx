@@ -38,7 +38,7 @@ const SearchResultList = ({ results, isClicked }) => {
               handleSearchForum(result._id)
             }}>
               <Stack alignItems={'center'} justifyContent={'flex-start'} flexDirection={'row'} bgcolor={'#E2E3E3'}>
-                <Image height={'70px'} width={'70px'} preview={false} src={result.image !== '' ? `http://localhost:3000/images/${result.image}` : 'https://fakeimg.pl/200x100/?retina=1&text=こんにちは&font=noto'} style={{
+                <Image height={'70px'} width={'70px'} preview={false} src={result.image !== '' ? `https://dyci-hub-api.vercel.app/images/${result.image}` : 'https://fakeimg.pl/200x100/?retina=1&text=こんにちは&font=noto'} style={{
                   objectFit: 'contain'
                 }} />
                 <Stack marginLeft={'15px'}>
