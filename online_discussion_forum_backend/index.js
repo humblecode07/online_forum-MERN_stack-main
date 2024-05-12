@@ -100,9 +100,4 @@ app.use(function (err, req, res, next) {
   res.render('error');
 });
 
-app.use((req, res, next) => {
-  res.cookie('sameSiteCookie', 'value', { sameSite: 'lax' });
-  next();
-});
-
 module.exports = app;
