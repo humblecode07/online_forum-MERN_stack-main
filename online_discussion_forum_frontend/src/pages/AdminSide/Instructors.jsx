@@ -117,7 +117,7 @@ const Instructors = () => {
                 <Image height={'35dvh'} src={`https://fakeimg.pl/200x100/?retina=1&text=こんにちは&font=noto`} />
                 {instructor && (
                     <Stack direction={'row'} alignItems={'center'} marginBottom={'50px'}>
-                        <Avatar src={instructor.profile ? `https://dyci-hub-api.vercel.app/${instructor.profile}` : `https://picsum.photos/id/237/200/300`} sx={{
+                        <Avatar src={instructor.profile ? `http://localhost:3000/${instructor.profile}` : `https://picsum.photos/id/237/200/300`} sx={{
                             width: 160,
                             height: 160,
                             border: '3px solid #f2f2f2',
@@ -196,7 +196,7 @@ const Instructors = () => {
                             {instructor?.students.map((student) => (
                                 <Grid item xs={6} key={student._id}>
                                     <Stack flexDirection={'row'} alignItems="center" width={'100%'}>
-                                        <Avatar src={`https://dyci-hub-api.vercel.app/images/${student.profile}`} style={{ width: 80, height: 80, backgroundColor: 'primary.main' }} sx={{ marginRight: '10px' }} />
+                                        <Avatar src={`http://localhost:3000/images/${student.profile}`} style={{ width: 80, height: 80, backgroundColor: 'primary.main' }} sx={{ marginRight: '10px' }} />
                                         <Stack flexDirection={'column'} alignItems={'flex-start'} width={'200px'}>
                                             <Typography>
                                                 <span style={{ fontWeight: 'bold' }}>

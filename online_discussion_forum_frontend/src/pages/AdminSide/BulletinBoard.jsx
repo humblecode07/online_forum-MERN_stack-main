@@ -127,7 +127,7 @@ const BulletinBoard = () => {
                       component="img"
                       onClick={() => handleForumClick(forum._id)}
                       style={{ borderTopRightRadius: '8px', borderBottomRightRadius: '8px', height: '100%', width: '32dvw', objectFit: 'cover', marginRight: '20px', cursor: 'pointer' }}
-                      image={forum.image !== '' ? `https://dyci-hub-api.vercel.app/images/${forum.image}` : 'https://fakeimg.pl/200x100/?retina=1&text=こんにちは&font=noto'}
+                      image={forum.image !== '' ? `http://localhost:3000/images/${forum.image}` : 'https://fakeimg.pl/200x100/?retina=1&text=こんにちは&font=noto'}
                       alt={`Image`}
                     />
                   </Box>

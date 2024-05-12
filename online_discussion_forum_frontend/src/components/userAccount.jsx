@@ -419,7 +419,7 @@ const UserAccount = () => {
                                 sx={{ width: 120, height: 120, bgcolor: 'primary.main', cursor: 'pointer' }}
                             >
                                 {student && (
-                                    <img src={`https://dyci-hub-api.vercel.app/images/${student?.profile}`} alt="Firefly" style={{ borderRadius: '50%' }} />
+                                    <img src={`http://localhost:3000/images/${student?.profile}`} alt="Firefly" style={{ borderRadius: '50%' }} />
                                 )}
                             </Avatar>
                             <input

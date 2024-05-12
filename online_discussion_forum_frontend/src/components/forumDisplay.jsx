@@ -60,7 +60,7 @@ const ForumDisplay = () => {
       <Image
         height={'35dvh'}
         style={{ borderRadius: '20px', marginBottom: '25px' }}
-        src={forum.image ? `https://dyci-hub-api.vercel.app/images/${forum.image}` : 'https://fakeimg.pl/200x100/?retina=1&text=こんにちは&font=noto'}
+        src={forum.image ? `http://localhost:3000/images/${forum.image}` : 'https://fakeimg.pl/200x100/?retina=1&text=こんにちは&font=noto'}
       />
       <Stack alignItems={'center'} justifyContent={'center'}>
         <Typography fontWeight={100} fontSize={'28px'}>{forum.forumName}</Typography>

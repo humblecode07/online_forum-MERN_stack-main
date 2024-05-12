@@ -307,7 +307,7 @@ const Dashboard = () => {
                     <CardMedia
                       component="img"
                       style={{ borderRadius: '30px', height: '150px', width: '150px', objectFit: 'none', marginRight: '20px' }}
-                      image={topThread.image && topThread.image[0] ? `https://dyci-hub-api.vercel.app/${topThread.image[0]}` : 'https://fakeimg.pl/200x100/?retina=1&text=こんにちは&font=noto'}
+                      image={topThread.image && topThread.image[0] ? `http://localhost:3000/${topThread.image[0]}` : 'https://fakeimg.pl/200x100/?retina=1&text=こんにちは&font=noto'}
                     />
                   </Stack>
                 </Card>
