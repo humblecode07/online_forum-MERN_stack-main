@@ -9,6 +9,7 @@ const asyncHandler = require('express-async-handler');
 const { gridFSBucket } = global;
 const fs = require('fs')
 const { v4: uuidv4 } = require('uuid');
+const { Readable } = require('stream');
 
 exports.instructor_get = asyncHandler(async (req, res, next) => {
     const [instructors, instructorCount] = await Promise.all([
@@ -68,20 +69,16 @@ exports.instructor_post_create = asyncHandler(async (req, res, next) => {
         const salt = bcrypt.genSaltSync(10);
         const hash = await bcrypt.hashSync(req.body.pass, salt);
 
-        // Extract file extension from the original filename
         const originalFilename = req.file.originalname;
         const fileExtension = originalFilename.split('.').pop();
-
-        // Generate a unique filename for the profile image
         const profileImageUUID = uuidv4() + '.' + fileExtension;
 
-        const readStream = fs.createReadStream(req.file.path);
+        const buffer = req.file.buffer;
+        const readBufferStream = Readable.from(buffer);
 
-        // Use GridFSBucket to store the file in MongoDB
         const uploadStream = global.gridFSBucket.openUploadStream(profileImageUUID);
 
-        // Pipe the file stream to GridFS upload stream
-        readStream.pipe(uploadStream);
+        readBufferStream.pipe(uploadStream);
 
         uploadStream.on('error', (error) => {
             console.error('Error uploading file:', error);
@@ -112,7 +109,7 @@ exports.instructor_post_create = asyncHandler(async (req, res, next) => {
             });
         });
 
-        readStream.on('error', (error) => {
+        readBufferStream.on('error', (error) => {
             console.error('Error reading file:', error);
             res.status(500).json({ message: "Failed to read file" });
         });
@@ -141,24 +138,61 @@ exports.instructor_post_changepass = asyncHandler(async (req, res, next) => {
 
 exports.instructor_patch_info = asyncHandler(async (req, res, next) => {
     const { instructorId } = req.params;
-    const profileImage = req.file.path;
 
-    const userDataToUpdate = { ...req.body };
-    delete userDataToUpdate.profileImage;
+    let imageUUID = '';
 
-    userDataToUpdate.profile = profileImage;
+    if (req.file) {
+        const originalFilename = req.file.originalname;
+        const fileExtension = originalFilename.split('.').pop();
+        imageUUID = uuidv4() + '.' + fileExtension;
 
-    const updatedInstructor = await Instructor.findByIdAndUpdate(instructorId, { $set: userDataToUpdate }, { new: true });
+        const buffer = req.file.buffer;
+        const readBufferStream = Readable.from(buffer);
 
-    if (!updatedInstructor) {
-        return res.status(404).json({ message: "Instructor not found" });
+        const uploadStream = global.gridFSBucket.openUploadStream(imageUUID);
+
+        readBufferStream.pipe(uploadStream);
+
+        uploadStream.on('error', (error) => {
+            console.error('Error uploading file:', error);
+            res.status(500).json({ message: "Failed to upload file" });
+        });
+
+        uploadStream.on('finish', async () => {
+            console.log('File uploaded successfully');
+            // Once the file is uploaded, proceed with database update
+            updateInstructor();
+        });
+
+        readBufferStream.on('error', (error) => {
+            console.error('Error reading file:', error);
+            res.status(500).json({ message: "Failed to read file" });
+        });
+    } else {
+        // If no file is uploaded, proceed with database update directly
+        updateInstructor();
     }
 
-    return res.status(200).json({
-        message: "Instructor info has been updated.",
-        instructor: updatedInstructor
-    });
+    async function updateInstructor() {
+        const userDataToUpdate = { ...req.body };
+        delete userDataToUpdate.profileImage; 
+
+        console.log(imageUUID)
+        userDataToUpdate.profile = imageUUID;
+
+        const updatedInstructor = await Instructor.findByIdAndUpdate(instructorId, { $set: userDataToUpdate }, { new: true });
+
+        if (!updatedInstructor) {
+            return res.status(404).json({ message: "Instructor not found" });
+        }
+
+        return res.status(200).json({
+            message: "Instructor info has been updated.",
+            instructor: updatedInstructor
+        });
+    }
 });
+
 
 exports.instructor_delete = asyncHandler(async (req, res, next) => {
     const { instructorId } = req.params;

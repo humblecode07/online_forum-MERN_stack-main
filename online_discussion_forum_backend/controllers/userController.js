@@ -9,7 +9,7 @@ const asyncHandler = require('express-async-handler');
 const { gridFSBucket } = global;
 const fs = require('fs')
 const { v4: uuidv4 } = require('uuid');
-
+const { Readable } = require('stream');
 
 /* Display all users */
 exports.user_get = asyncHandler(async (req, res, next) => {
@@ -71,20 +71,16 @@ exports.user_post_create = asyncHandler(async (req, res, next) => {
         const salt = bcrypt.genSaltSync(10);
         const hash = await bcrypt.hashSync(req.body.pass, salt);
 
-        // Extract file extension from the original filename
         const originalFilename = req.file.originalname;
         const fileExtension = originalFilename.split('.').pop();
-
-        // Generate a unique filename for the profile image
         const profileImageUUID = uuidv4() + '.' + fileExtension;
 
-        const readStream = fs.createReadStream(req.file.path);
+        const buffer = req.file.buffer;
+        const readBufferStream = Readable.from(buffer);
 
-        // Use GridFSBucket to store the file in MongoDB
         const uploadStream = global.gridFSBucket.openUploadStream(profileImageUUID);
 
-        // Pipe the file stream to GridFS upload stream
-        readStream.pipe(uploadStream);
+        readBufferStream.pipe(uploadStream);
 
         uploadStream.on('error', (error) => {
             console.error('Error uploading file:', error);
@@ -132,7 +128,7 @@ exports.user_post_create = asyncHandler(async (req, res, next) => {
         });
 
 
-        readStream.on('error', (error) => {
+        readBufferStream.on('error', (error) => {
             console.error('Error reading file:', error);
             res.status(500).json({ message: "Failed to read file" });
         });
@@ -163,24 +159,22 @@ exports.user_post_changepass = asyncHandler(async (req, res, next) => {
 /* Update user's info*/
 exports.user_patch_info = asyncHandler(async (req, res, next) => {
     const { userId } = req.params;
-    const profileImage = req.file ? req.file.path : undefined;
+    const profileImage = req.file ? req.file : undefined;
 
     try {
         let userDataToUpdate = { ...req.body };
 
         if (profileImage) {
-            // Extract file extension from the original filename
             const originalFilename = req.file.originalname;
             const fileExtension = originalFilename.split('.').pop();
-
-            // Generate a unique filename for the profile image
             const profileImageUUID = uuidv4() + '.' + fileExtension;
 
-            const readStream = fs.createReadStream(profileImage);
-            // Use the UUID with extension as the filename in GridFS
+            const buffer = req.file.buffer;
+            const readBufferStream = Readable.from(buffer);
+
             const uploadStream = global.gridFSBucket.openUploadStream(profileImageUUID);
 
-            readStream.pipe(uploadStream);
+            readBufferStream.pipe(uploadStream);
 
             uploadStream.on('error', (error) => {
                 console.error('Error uploading file:', error);
@@ -192,7 +186,7 @@ exports.user_patch_info = asyncHandler(async (req, res, next) => {
                 await updateUser(userId, userDataToUpdate, res);
             });
 
-            readStream.on('error', (error) => {
+            readBufferStream.on('error', (error) => {
                 console.error('Error reading file:', error);
                 res.status(500).json({ message: "Failed to read file" });
             });

@@ -8,7 +8,7 @@ const asyncHandler = require('express-async-handler');
 const { gridFSBucket } = global;
 const fs = require('fs')
 const { v4: uuidv4 } = require('uuid');
-
+const { Readable } = require('stream');
 
 /* Display all forums */
 exports.forum_get = asyncHandler(async (req, res, next) => {
@@ -47,34 +47,38 @@ exports.forum_create = asyncHandler(async (req, res, next) => {
     }
 
     let imageUUID = '';
+
+    console.log(req.file.originalname)
     if (req.file) {
         const originalFilename = req.file.originalname;
         const fileExtension = originalFilename.split('.').pop();
         imageUUID = uuidv4() + '.' + fileExtension;
 
-        try {
-            const readStream = fs.createReadStream(req.file.path);
-            const uploadStream = global.gridFSBucket.openUploadStream(imageUUID);
+        const buffer = req.file.buffer;
+        const readBufferStream = Readable.from(buffer);
 
-            readStream.pipe(uploadStream);
+        const uploadStream = global.gridFSBucket.openUploadStream(imageUUID);
 
-            uploadStream.on('error', (error) => {
-                console.error('Error uploading file:', error);
-                res.status(500).json({ message: "Failed to upload file" });
-            });
+        readBufferStream.pipe(uploadStream);
 
-            uploadStream.on('finish', () => {
-                console.log('File uploaded successfully');
-            });
+        uploadStream.on('error', (error) => {
+            console.error('Error uploading file:', error);
+            res.status(500).json({ message: "Failed to upload file" });
+        });
 
-            readStream.on('error', (error) => {
-                console.error('Error reading file:', error);
-                res.status(500).json({ message: "Failed to read file" });
-            });
-        } catch (error) {
-            console.error('Error handling file upload:', error);
-            res.status(500).json({ message: "Failed to handle file upload" });
-        }
+        uploadStream.on('finish', async () => {
+            console.log('File uploaded successfully');
+            // Perform any additional operations after successful upload
+        });
+
+        readBufferStream.on('error', (error) => {
+            console.error('Error reading file:', error);
+            res.status(500).json({ message: "Failed to read file" });
+        });
+    } else {
+        // Handle the case when no file is uploaded
+        console.error('No file uploaded');
+        res.status(400).json({ message: "No file uploaded" });
     }
 
     const creationTime = new Date();
@@ -119,15 +123,19 @@ exports.forum_patch_info = asyncHandler(async (req, res, next) => {
 
     let imageUUID = '';
 
-    if (req.files.length > 0) {
+    console.log(req.files[0].originalname)
+    if (req.files) {
         const originalFilename = req.files[0].originalname;
         const fileExtension = originalFilename.split('.').pop();
         imageUUID = uuidv4() + '.' + fileExtension;
 
-        const readStream = fs.createReadStream(req.files[0].path);
+        const buffer = req.files[0].buffer;
+        const readBufferStream = Readable.from(buffer);
+
+        console.log(imageUUID)
         const uploadStream = global.gridFSBucket.openUploadStream(imageUUID);
 
-        readStream.pipe(uploadStream);
+        readBufferStream.pipe(uploadStream);
 
         uploadStream.on('error', (error) => {
             console.error('Error uploading file:', error);
@@ -138,11 +146,16 @@ exports.forum_patch_info = asyncHandler(async (req, res, next) => {
             console.log('File uploaded successfully');
         });
 
-        readStream.on('error', (error) => {
+        readBufferStream.on('error', (error) => {
             console.error('Error reading file:', error);
             res.status(500).json({ message: "Failed to read file" });
         });
+    } else {
+        // Handle the case when no file is uploaded
+        console.error('No file uploaded');
+        res.status(400).json({ message: "No file uploaded" });
     }
+
 
     if (imageUUID) {
         req.body.image = imageUUID;

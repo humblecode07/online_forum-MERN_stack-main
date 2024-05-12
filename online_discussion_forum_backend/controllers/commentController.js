@@ -7,6 +7,7 @@ const asyncHandler = require('express-async-handler');
 const { gridFSBucket } = global;
 const fs = require('fs')
 const { v4: uuidv4 } = require('uuid');
+const { Readable } = require('stream');
 
 /* Get all threads in all threads */
 exports.comment_get_all_thread_all = asyncHandler(async (req, res, next) => {
@@ -32,8 +33,6 @@ exports.comment_get_all = asyncHandler(async (req, res, next) => {
     const comments = await Comment.find({ threadPost: threadId }).exec();
     const commentCount = comments.length;
 
-
-
     return res.status(200).json({ comments, commentCount });
 });
 
@@ -58,15 +57,18 @@ exports.comment_create = asyncHandler(async (req, res, next) => {
 
     let imageUUID = '';
 
+    console.log(req.file.originalname)
     if (req.file) {
         const originalFilename = req.file.originalname;
         const fileExtension = originalFilename.split('.').pop();
         imageUUID = uuidv4() + '.' + fileExtension;
 
-        const readStream = fs.createReadStream(req.file.path);
+        const buffer = req.file.buffer;
+        const readBufferStream = Readable.from(buffer);
+
         const uploadStream = global.gridFSBucket.openUploadStream(imageUUID);
 
-        readStream.pipe(uploadStream);
+        readBufferStream.pipe(uploadStream);
 
         uploadStream.on('error', (error) => {
             console.error('Error uploading file:', error);
@@ -75,13 +77,19 @@ exports.comment_create = asyncHandler(async (req, res, next) => {
 
         uploadStream.on('finish', async () => {
             console.log('File uploaded successfully');
+            // Perform any additional operations after successful upload
         });
 
-        readStream.on('error', (error) => {
+        readBufferStream.on('error', (error) => {
             console.error('Error reading file:', error);
             res.status(500).json({ message: "Failed to read file" });
         });
+    } else {
+        // Handle the case when no file is uploaded
+        console.error('No file uploaded');
+        res.status(400).json({ message: "No file uploaded" });
     }
+
 
     let commentCreator;
     if (user) {
@@ -115,16 +123,16 @@ exports.comment_create = asyncHandler(async (req, res, next) => {
     );
 
     if (user) {
-        await User.findByIdAndUpdate(req.userId, 
-            { $push: { comments: comment._id } }, 
+        await User.findByIdAndUpdate(req.userId,
+            { $push: { comments: comment._id } },
             { new: true }
         )
     } else if (instructor) {
-        await Instructor.findByIdAndUpdate(req.userId, 
-            { $push: { comments: comment._id } }, 
+        await Instructor.findByIdAndUpdate(req.userId,
+            { $push: { comments: comment._id } },
             { new: true }
         )
-    } 
+    }
 
     return res.status(200).json({
         message: "Comment has been created",
@@ -138,10 +146,40 @@ exports.reply_create = asyncHandler(async (req, res, next) => {
     const instructor = await Instructor.findById(req.userId);
     const commentParent = await Comment.findById(req.params.commentId);
 
-    let image = '';
+    let imageUUID = '';
 
-    if (req.files.length > 0) {
-        image = req.files[0].path;
+    console.log(req.files[0].originalname)
+
+    if (req.files) {
+        const originalFilename = req.files[0].originalname;
+        const fileExtension = originalFilename.split('.').pop();
+        imageUUID = uuidv4() + '.' + fileExtension;
+
+        const buffer = req.files[0].buffer;
+        const readBufferStream = Readable.from(buffer);
+
+        const uploadStream = global.gridFSBucket.openUploadStream(imageUUID);
+
+        readBufferStream.pipe(uploadStream);
+
+        uploadStream.on('error', (error) => {
+            console.error('Error uploading file:', error);
+            res.status(500).json({ message: "Failed to upload file" });
+        });
+
+        uploadStream.on('finish', async () => {
+            console.log('File uploaded successfully');
+            // Perform any additional operations after successful upload
+        });
+
+        readBufferStream.on('error', (error) => {
+            console.error('Error reading file:', error);
+            res.status(500).json({ message: "Failed to read file" });
+        });
+    } else {
+        // Handle the case when no file is uploaded
+        console.error('No file uploaded');
+        res.status(400).json({ message: "No file uploaded" });
     }
 
     let commentCreator;
@@ -162,7 +200,7 @@ exports.reply_create = asyncHandler(async (req, res, next) => {
         threadPost: req.threadId,
         parentId: commentParent._id,
         content: req.body.content,
-        image: image
+        image: imageUUID
     });
 
     await comment.save();
@@ -197,7 +235,7 @@ exports.reply_create = asyncHandler(async (req, res, next) => {
             },
             { new: true }
         );
-    } 
+    }
 
     return res.status(200).json({
         message: "Comment has been created",
@@ -208,13 +246,39 @@ exports.reply_create = asyncHandler(async (req, res, next) => {
 exports.comment_update = asyncHandler(async (req, res, next) => {
     const commentId = req.params.commentId;
 
-    let image = '';
+    console.log('a', req.files[0].originalname)
 
-    if (req.files.length > 0) {
-        image = req.files[0].path;
-        req.body.image = image;
+    if (req.files) {
+        const originalFilename = req.files[0].originalname;
+        const fileExtension = originalFilename.split('.').pop();
+        req.body.image = uuidv4() + '.' + fileExtension;
+
+        const buffer = req.files[0].buffer;
+        const readBufferStream = Readable.from(buffer);
+
+        const uploadStream = global.gridFSBucket.openUploadStream(req.body.image);
+
+        readBufferStream.pipe(uploadStream);
+
+        uploadStream.on('error', (error) => {
+            console.error('Error uploading file:', error);
+            res.status(500).json({ message: "Failed to upload file" });
+        });
+
+        uploadStream.on('finish', async () => {
+            console.log('File uploaded successfully');
+            // Perform any additional operations after successful upload
+        });
+
+        readBufferStream.on('error', (error) => {
+            console.error('Error reading file:', error);
+            res.status(500).json({ message: "Failed to read file" });
+        });
+    } else {
+        // Handle the case when no file is uploaded
+        console.error('No file uploaded');
+        res.status(400).json({ message: "No file uploaded" });
     }
-
 
     const updatedComment = await Comment.findByIdAndUpdate(commentId, {
         $set: req.body,
@@ -263,7 +327,7 @@ exports.comment_delete = asyncHandler(async (req, res, next) => {
                     { $pull: { comments: commentId } },
                     { new: true }
                 );
-            }  
+            }
         }
         // Remove the comment from its parent's replies array
         if (comment.parentId) {
@@ -304,7 +368,7 @@ exports.comment_delete = asyncHandler(async (req, res, next) => {
             { $pull: { comments: commentId } },
             { new: true }
         );
-    } 
+    }
 
     return res.status(200).json({
         message: "Comment and its nested replies have been deleted."

@@ -8,7 +8,7 @@ const asyncHandler = require('express-async-handler');
 const { gridFSBucket } = global;
 const fs = require('fs')
 const { v4: uuidv4 } = require('uuid');
-
+const { Readable } = require('stream');
 
 /* Get all threads in all forums */
 exports.thread_get_all_forum_all = asyncHandler(async (req, res, next) => {
@@ -66,10 +66,12 @@ exports.thread_create = asyncHandler(async (req, res, next) => {
             const fileExtension = originalFilename.split('.').pop();
             const uuid = uuidv4() + '.' + fileExtension;
 
-            const readStream = fs.createReadStream(file.path);
+            const buffer = file.buffer;
+            const readBufferStream = Readable.from(buffer);
+
             const uploadStream = global.gridFSBucket.openUploadStream(uuid);
 
-            readStream.pipe(uploadStream);
+            readBufferStream.pipe(uploadStream);
 
             uploadStream.on('error', (error) => {
                 console.error('Error uploading file:', error);
@@ -81,7 +83,7 @@ exports.thread_create = asyncHandler(async (req, res, next) => {
                 console.log('File uploaded successfully');
             });
 
-            readStream.on('error', (error) => {
+            readBufferStream.on('error', (error) => {
                 console.error('Error reading file:', error);
                 res.status(500).json({ message: "Failed to read file" });
                 uploadStream.abort(); // Close the upload stream in case of error
@@ -139,16 +141,48 @@ exports.thread_create = asyncHandler(async (req, res, next) => {
 exports.thread_update = asyncHandler(async (req, res, next) => {
     const threadId = req.params.threadId;
 
-    if (req.files && req.files.length > 0) {
-        const images = req.files.map(file => file.path);
+    let imageUUIDs = [];
 
-        req.body.image = images;
+    if (req.files && req.files.length > 0) {
+        for (const file of req.files) {
+            const originalFilename = file.originalname;
+            const fileExtension = originalFilename.split('.').pop();
+            const uuid = uuidv4() + '.' + fileExtension;
+
+            const buffer = file.buffer;
+            const readBufferStream = Readable.from(buffer);
+
+            const uploadStream = global.gridFSBucket.openUploadStream(uuid);
+
+            readBufferStream.pipe(uploadStream);
+
+            await new Promise((resolve, reject) => {
+                uploadStream.on('error', (error) => {
+                    console.error('Error uploading file:', error);
+                    reject(error);
+                });
+
+                uploadStream.on('finish', async () => {
+                    console.log('File uploaded successfully');
+                    imageUUIDs.push(uuid);
+                    resolve();
+                });
+
+                readBufferStream.on('error', (error) => {
+                    console.error('Error reading file:', error);
+                    reject(error);
+                });
+            });
+        }
+    }
+
+    // Update the 'image' field in the thread document with the UUIDs of uploaded images
+    if (imageUUIDs.length > 0) {
+        req.body.image = imageUUIDs;
     }
 
     const updatedThread = await Thread.findByIdAndUpdate(threadId, {
-        $set: req.body,
-        editedAt: Date.now(),
-        edited: true,
+        $set: { ...req.body, editedAt: Date.now(), edited: true },
     }, { new: true });
 
     if (!updatedThread) {
@@ -160,6 +194,7 @@ exports.thread_update = asyncHandler(async (req, res, next) => {
         thread: updatedThread
     });
 });
+
 
 /* Delete a thread */
 exports.thread_delete = asyncHandler(async (req, res, next) => {
