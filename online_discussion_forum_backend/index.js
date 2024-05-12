@@ -20,7 +20,7 @@ const commentRouter = require('./routes/comment');
 const imageRouter = require('./routes/image')
 
 const app = express();
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({ origin: true, credentials: true, methods: "GET,HEAD,PUT,PATCH,POST,DELETE" }));
 app.use(express.json());
 
 mongoose.set("strictQuery", false);
