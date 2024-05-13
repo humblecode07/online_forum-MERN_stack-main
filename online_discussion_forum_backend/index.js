@@ -20,7 +20,7 @@ const commentRouter = require('./routes/comment');
 const imageRouter = require('./routes/image')
 
 const app = express();
-app.use(cors({ origin: "dyci-hub.vercel.app", credentials: true, methods: "GET,HEAD,PUT,PATCH,POST,DELETE" }));
+app.use(cors({ origin: "https://dyci-hub.vercel.app", credentials: true, methods: "GET,HEAD,PUT,PATCH,POST,DELETE" }));
 app.set("trust proxy", 1);
 app.use(express.json());
 
