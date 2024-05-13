@@ -21,6 +21,7 @@ const imageRouter = require('./routes/image')
 
 const app = express();
 app.use(cors({ origin: "dyci-hub.vercel.app", credentials: true, methods: "GET,HEAD,PUT,PATCH,POST,DELETE" }));
+app.set("trust proxy", 1);
 app.use(express.json());
 
 mongoose.set("strictQuery", false);
