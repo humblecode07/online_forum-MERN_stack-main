@@ -51,7 +51,7 @@ exports.log_in = asyncHandler(async (req, res, next) => {
   foundUser.refreshToken = refreshToken;
   await foundUser.save();
 
-  res.cookie('jwt', refreshToken, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000, domain: 'https://dyci-hub.vercel.app/' });
+  res.cookie('jwt', refreshToken, { httpOnly: true, secure: true, sameSite: 'None', maxAge: 24 * 60 * 60 * 1000, domain: 'dyci-hub.vercel.app/' });
 
   res.status(200).json({
     response: 'Auth Successful.',
