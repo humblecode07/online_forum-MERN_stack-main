@@ -162,6 +162,8 @@ const InstructorBulletin = () => {
     }
   }
 
+  console.log(forums)
+
   return (
     <Box display={'flex'} flexDirection={'column'} width={'70dvw'}>
       <Stack direction={'row'} justifyContent={'space-between'} sx={{ marginBottom: '20px' }}>
@@ -174,18 +176,18 @@ const InstructorBulletin = () => {
       </Stack>
 
       {forums?.length ? (
-        <Grid container spacing={2} direction={'column'} width={'70dvw'}>
+        <Grid container spacing={2} direction={'column'} width={'70vw'}>
           {forums.map((forum) => (
-            <Grid item key={forum._id}>
-              {forum.type === "Bulletin" ? (
+            forum.type === "Bulletin" ? (
+              <Grid item key={forum._id}>
                 <Card sx={{ border: '1px solid #ccc', borderRadius: '8px', display: 'flex', flexDirection: 'row' }}>
-                  <CardContent onClick={() => handleForumClick(forum._id)} style={{ cursor: 'pointer' }} sx={{ width: '55dvw' }}>
+                  <CardContent onClick={() => handleForumClick(forum._id)} style={{ cursor: 'pointer', width: '55vw' }}>
                     <Box display={'flex'} flexDirection={'row'}>
                       <Box width={'100%'}>
                         <Stack direction={'row'} alignItems={'center'} justifyContent={'space-between'}>
                           <Typography variant="h5" fontWeight={800}>{forum.forumName}</Typography>
                           <Box>
-                          <IconButton aria-label="more" color="primary" onClick={(e) => {
+                            <IconButton aria-label="more" color="primary" onClick={(e) => {
                               e.stopPropagation();
                               handleClick(e, forum._id);
                             }}>
@@ -212,7 +214,9 @@ const InstructorBulletin = () => {
                             </Menu>
                           </Box>
                         </Stack>
-                        <Typography marginBottom={'5px'}>{forum.description}</Typography>
+                        <Box style={{ maxHeight: '50px', overflowY: 'auto' }}>
+                          <Typography marginBottom={'5px'}>{forum.description}</Typography>
+                        </Box>
                         <div onClick={(e) => e.stopPropagation()} style={{ marginBottom: '5px', display: 'flex', flexDirection: 'row', gap: 5 }}>
                           <Typography>Creator: </Typography>
                           <NavLink style={{ textDecoration: 'underline' }} to={`/admin/${forum.creatorId}`}>{forum.creator}</NavLink>
@@ -226,19 +230,20 @@ const InstructorBulletin = () => {
                     <CardMedia
                       component="img"
                       onClick={() => handleForumClick(forum._id)}
-                      style={{ borderTopRightRadius: '8px', borderBottomRightRadius: '8px', height: '100%', width: '32dvw', objectFit: 'cover', marginRight: '20px', cursor: 'pointer' }}
-                      image={forum.image !== '' ? `https://dyci-hub-api.vercel.app/images/${forum.image}` : 'https://fakeimg.pl/200x100/?retina=1&text=こんにちは&font=noto'}
+                      style={{ borderTopRightRadius: '8px', borderBottomRightRadius: '8px', height: '100%', width: '32vw', objectFit: 'cover', maxHeight: '2500px', marginRight: '20px', cursor: 'pointer' }}
+                      image={forum.image !== '' ? `http://localhost:3000/images/${forum.image}` : 'https://fakeimg.pl/200x100/?retina=1&text=こんにちは&font=noto'}
                       alt={`Image`}
                     />
                   </Box>
                 </Card>
-              ) : null}
-            </Grid>
+              </Grid>
+            ) : null
           ))}
         </Grid>
       ) : (
-        <Typography>No forums found</Typography>
+        <Typography>No Bulletins found</Typography>
       )}
+
       {isEditing && (
         <Modal
           open={openEdit}

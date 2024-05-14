@@ -48,6 +48,8 @@ const Login = () => {
       const accessToken = response.data.token;
       const decodedToken = jwtDecode(accessToken);
       const { roles } = decodedToken;
+
+      localStorage.setItem("jwt", accessToken)
   
       console.log("User roles:", roles);
   

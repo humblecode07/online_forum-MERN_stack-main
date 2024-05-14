@@ -15,166 +15,166 @@ import { Affix, Layout } from 'antd';
 import { Header } from 'antd/es/layout/layout';
 
 const NavBar = ({ searchDisabled, searchType }) => {
-    const { auth } = useAuth()
-    const axiosPrivate = useAxiosPrivate();
-    const navigate = useNavigate();
-    const logout = useLogout();
-    const [results, setResults] = useState([]);
-  
-    const [userData, setUserData] = useState(null);
-    const [imageData, setImageData] = useState(null);
-  
-    const decoded = auth?.accessToken ? jwtDecode(auth.accessToken) : undefined
-  
-    const [anchorEl, setAnchorEl] = React.useState(null);
-    const open = Boolean(anchorEl);
-    const handleClick = (event) => {
-      setAnchorEl(event.currentTarget);
-    };
-    const handleClose = () => {
-      setAnchorEl(null);
-    };
-  
-    const handleStudentClick = (instructorId, settings) => {
-        navigate(`/instructor/profile/${instructorId}/${settings ? 'settings' : ''}`);
-    };
-  
-    const getUser = async () => {
-      try {
-        const response = await axiosPrivate.get(`/instructors/${decoded.userId}/`, {
-          headers: { 'Content-Type': 'application/json' },
-          withCredentials: true
-        })
-  
-        console.log(response)
-  
-        const fetchedUserData = response.data;
-  
-        const imageResponse = await axiosPrivate.get(`/images/${fetchedUserData?.instructor[0]?.profile}`, {
-          responseType: 'blob',
-          withCredentials: true
-        });
-        const imageUrl = URL.createObjectURL(imageResponse.data);
-        setImageData(imageUrl);
-  
-        setUserData(fetchedUserData);
-      }
-      catch (err) {
-        console.error('Error fetching user data:', err);
-      }
+  const { auth } = useAuth()
+  const axiosPrivate = useAxiosPrivate();
+  const navigate = useNavigate();
+  const logout = useLogout();
+  const [results, setResults] = useState([]);
+
+  const [userData, setUserData] = useState(null);
+  const [imageData, setImageData] = useState(null);
+
+  const decoded = auth?.accessToken ? jwtDecode(auth.accessToken) : undefined
+
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const open = Boolean(anchorEl);
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleStudentClick = (instructorId, settings) => {
+    navigate(`/instructor/profile/${instructorId}/${settings ? 'settings' : ''}`);
+  };
+
+  const getUser = async () => {
+    try {
+      const response = await axiosPrivate.get(`/instructors/${decoded.userId}/`, {
+        headers: { 'Content-Type': 'application/json' },
+        withCredentials: true
+      })
+
+      console.log(response)
+
+      const fetchedUserData = response.data;
+
+      const imageResponse = await axiosPrivate.get(`/images/${fetchedUserData?.instructor[0]?.profile}`, {
+        responseType: 'blob',
+        withCredentials: true
+      });
+      const imageUrl = URL.createObjectURL(imageResponse.data);
+      setImageData(imageUrl);
+
+      setUserData(fetchedUserData);
     }
-    useEffect(() => {
-      if (decoded?.userId) {
-        getUser();
-      }
-    }, [decoded?.userId]);
-  
-    return (
-      <Layout style={{ padding: 0 }}>
-        <Affix offsetTop={0}>
-          <Header style={{
-            width: '100dvw',
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'flex-start',
-            backgroundColor: '#fff', 
-            boxShadow: '0px 2px 8px rgba(0,0,0,0.08)',
-          }}>
-            <Stack direction={'column'}>
-              <SearchBar setResults={setResults} searchDisabled={searchDisabled} searchType={searchType} />
-              <SearchResultList results={results} />
-            </Stack>
-            <Stack direction={'row'}>
-              <IconButton aria-label="dark-mode">
-                <DarkModeIcon />
-              </IconButton>
-            </Stack>
-            <Tooltip title="Account settings">
-              <IconButton
-                onClick={handleClick}
-                size="small"
-                sx={{ ml: 2 }}
-                aria-controls={open ? 'account-menu' : undefined}
-                aria-haspopup="true"
-                aria-expanded={open ? 'true' : undefined}
-              >
-                <Avatar sx={{
-                  cursor: 'pointer'
-                }}>
-                  {userData && userData.instructor && userData.instructor.length > 0 && (
-                    <img src={imageData} alt="Firefly" />
-                  )}
-                </Avatar>
-              </IconButton>
-            </Tooltip>
-            <Menu
-              anchorEl={anchorEl}
-              id="account-menu"
-              open={open}
-              onClose={handleClose}
-              onClick={handleClose}
-              PaperProps={{
-                elevation: 0,
-                sx: {
-                  overflow: 'visible',
-                  filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
-                  mt: 1.5,
-                  '& .MuiAvatar-root': {
-                    width: 32,
-                    height: 32,
-                    ml: -0.5,
-                    mr: 1,
-                  },
-                  '&::before': {
-                    content: '""',
-                    display: 'block',
-                    position: 'absolute',
-                    top: 0,
-                    right: 14,
-                    width: 10,
-                    height: 10,
-                    bgcolor: 'background.paper',
-                    transform: 'translateY(-50%) rotate(45deg)',
-                    zIndex: 0,
-                  },
-                },
-              }}
-              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-            >
-              <MenuItem onClick={() => {
-                handleClose();
-                handleStudentClick(decoded.userId, false)
-              }}>
-                <ListItemIcon>
-                  <AccountCircleIcon />
-                </ListItemIcon>
-                Profile
-              </MenuItem>
-              <Divider />
-              <MenuItem onClick={() => {
-                handleClose();
-                handleStudentClick(decoded.userId, true)
-              }}>
-                <ListItemIcon>
-                  <Settings fontSize="small" />
-                </ListItemIcon>
-                Settings
-              </MenuItem>
-              <MenuItem onClick={() => {
-                handleClose();
-                logout();
-              }}>
-                <ListItemIcon>
-                  <Logout fontSize="small" />
-                </ListItemIcon>
-                Logout
-              </MenuItem>
-            </Menu>
-          </Header>
-        </Affix>
-      </Layout>
-    )
+    catch (err) {
+      console.error('Error fetching user data:', err);
+    }
   }
-  
-  export default NavBar
+  useEffect(() => {
+    if (decoded?.userId) {
+      getUser();
+    }
+  }, [decoded?.userId]);
+
+  return (
+    <Layout style={{ padding: 0 }}>
+      <Affix offsetTop={0}>
+        <Header style={{
+          width: '100dvw',
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'flex-start',
+          backgroundColor: '#fff',
+          boxShadow: '0px 2px 8px rgba(0,0,0,0.08)',
+        }}>
+          <Stack direction={'column'}>
+            <SearchBar setResults={setResults} searchDisabled={searchDisabled} searchType={searchType} />
+            <SearchResultList results={results} />
+          </Stack>
+          <Stack direction={'row'}>
+            <IconButton aria-label="dark-mode">
+              <DarkModeIcon />
+            </IconButton>
+          </Stack>
+          <Tooltip title="Account settings">
+            <IconButton
+              onClick={handleClick}
+              size="small"
+              sx={{ ml: 2 }}
+              aria-controls={open ? 'account-menu' : undefined}
+              aria-haspopup="true"
+              aria-expanded={open ? 'true' : undefined}
+            >
+              <Avatar sx={{
+                cursor: 'pointer',
+              }}>
+                {userData && userData.instructor && userData.instructor.length > 0 && (
+                  <img src={imageData} alt="Firefly" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                )}
+              </Avatar>
+            </IconButton>
+          </Tooltip>
+          <Menu
+            anchorEl={anchorEl}
+            id="account-menu"
+            open={open}
+            onClose={handleClose}
+            onClick={handleClose}
+            PaperProps={{
+              elevation: 0,
+              sx: {
+                overflow: 'visible',
+                filter: 'drop-shadow(0px 2px 8px rgba(0,0,0,0.32))',
+                mt: 1.5,
+                '& .MuiAvatar-root': {
+                  width: 32,
+                  height: 32,
+                  ml: -0.5,
+                  mr: 1,
+                },
+                '&::before': {
+                  content: '""',
+                  display: 'block',
+                  position: 'absolute',
+                  top: 0,
+                  right: 14,
+                  width: 10,
+                  height: 10,
+                  bgcolor: 'background.paper',
+                  transform: 'translateY(-50%) rotate(45deg)',
+                  zIndex: 0,
+                },
+              },
+            }}
+            transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+            anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+          >
+            <MenuItem onClick={() => {
+              handleClose();
+              handleStudentClick(decoded.userId, false)
+            }}>
+              <ListItemIcon>
+                <AccountCircleIcon />
+              </ListItemIcon>
+              Profile
+            </MenuItem>
+            <Divider />
+            <MenuItem onClick={() => {
+              handleClose();
+              handleStudentClick(decoded.userId, true)
+            }}>
+              <ListItemIcon>
+                <Settings fontSize="small" />
+              </ListItemIcon>
+              Settings
+            </MenuItem>
+            <MenuItem onClick={() => {
+              handleClose();
+              logout();
+            }}>
+              <ListItemIcon>
+                <Logout fontSize="small" />
+              </ListItemIcon>
+              Logout
+            </MenuItem>
+          </Menu>
+        </Header>
+      </Affix>
+    </Layout>
+  )
+}
+
+export default NavBar

@@ -93,7 +93,7 @@ const Students = () => {
                 <Image height={'35dvh'} src={`https://fakeimg.pl/200x100/?retina=1&text=こんにちは&font=noto`} />
                 {student && ( // Check if student data is available
                     <Stack direction={'row'} alignItems={'center'} marginBottom={'50px'}>
-                        <Avatar src={student.profile ? `https://dyci-hub-api.vercel.app/images/${student.profile}` : `https://picsum.photos/id/237/200/300`} sx={{
+                        <Avatar src={student.profile ? `http://localhost:3000/images/${student.profile}` : `https://picsum.photos/id/237/200/300`} sx={{
                             width: 160,
                             height: 160,
                             border: '3px solid #f2f2f2',

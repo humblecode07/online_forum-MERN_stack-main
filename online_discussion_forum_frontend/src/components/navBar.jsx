@@ -112,10 +112,10 @@ const NavBar = ({ searchDisabled, searchType }) => {
               aria-expanded={open ? 'true' : undefined}
             >
               <Avatar sx={{
-                cursor: 'pointer'
+                cursor: 'pointer',
               }}>
                 {userData && userData.user && userData.user.length > 0 && (
-                  <img src={imageData} alt="Firefly" />
+                  <img src={imageData} alt="Firefly" style={{ borderRadius: '50%' }} />
                 )}
               </Avatar>
             </IconButton>

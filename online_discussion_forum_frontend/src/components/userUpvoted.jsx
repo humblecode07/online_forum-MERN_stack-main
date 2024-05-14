@@ -178,7 +178,7 @@ const UserUpvoted = () => {
                   <CardMedia
                     component="img"
                     style={{ borderRadius: '30px', height: '150px', width: '200px', objectFit: 'none', marginRight: '20px' }}
-                    image={upvote.image && upvote.image[0] ? `https://dyci-hub-api.vercel.app/images/${upvote.image[0]}` : 'https://fakeimg.pl/200x100/?retina=1&text=こんにちは&font=noto'}
+                    image={upvote.image && upvote.image[0] ? `http://localhost:3000/images/${upvote.image[0]}` : 'https://fakeimg.pl/200x100/?retina=1&text=こんにちは&font=noto'}
                   />
                 </Stack>
               </Card>

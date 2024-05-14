@@ -111,15 +111,31 @@ const UserAccount = () => {
                 const formData = new FormData();
                 formData.append('profile', avatar);
 
-                try {
-                    await axiosPrivate.patch(`/users/${studentId}`, formData, {
-                        headers: {
-                            'Content-Type': 'multipart/form-data'
-                        }
-                    });
-                } catch (error) {
-                    console.error('Error uploading avatar:', error);
-                    // Handle error if upload fails
+                if (window.location.pathname.includes('/student')) {
+                    try {
+                        await axiosPrivate.patch(`/users/${studentId}`, formData, {
+                            headers: {
+                                'Content-Type': 'multipart/form-data'
+                            }
+                        });
+                        window.location.reload();
+                    } catch (error) {
+                        console.error('Error uploading avatar:', error);
+                        // Handle error if upload fails
+                    }
+                }
+                else if (window.location.pathname.includes('/instructor/')) {
+                    try {
+                        await axiosPrivate.patch(`/instructors/${instructorId}`, formData, {
+                            headers: {
+                                'Content-Type': 'multipart/form-data'
+                            }
+                        });
+                        window.location.reload();
+                    } catch (error) {
+                        console.error('Error uploading avatar:', error);
+                        // Handle error if upload fails
+                    }
                 }
             }
         };
@@ -391,13 +407,13 @@ const UserAccount = () => {
                     </>
                 ) : (
                     <>
-                       <Stack direction={'row'} justifyContent={'space-between'} marginBottom={'20px'}>
+                        <Stack direction={'row'} justifyContent={'space-between'} marginBottom={'20px'}>
                             <Stack>
                                 <Typography fontWeight={500}>Subjects</Typography>
                                 <Typography fontSize={'12px'}>{student?.subjects}</Typography>
                             </Stack>
                             <Button variant='outlined' sx={{ borderRadius: '20px' }}>Change</Button>
-                        </Stack>  
+                        </Stack>
                     </>
                 )}
 
@@ -419,7 +435,7 @@ const UserAccount = () => {
                                 sx={{ width: 120, height: 120, bgcolor: 'primary.main', cursor: 'pointer' }}
                             >
                                 {student && (
-                                    <img src={`https://dyci-hub-api.vercel.app/images/${student?.profile}`} alt="Firefly" style={{ borderRadius: '50%' }} />
+                                    <img src={`http://localhost:3000/images/${student?.profile}`} alt="Firefly" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 )}
                             </Avatar>
                             <input

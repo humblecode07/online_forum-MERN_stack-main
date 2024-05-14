@@ -1,4 +1,4 @@
-import { Avatar, Box, Stack, Typography } from '@mui/material'
+import { Avatar, Box, Button, Stack, Typography } from '@mui/material'
 import React, { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router-dom/dist/umd/react-router-dom.development';
 import useAxiosPrivate from '../../hooks/useAxiosPrivate';
@@ -60,7 +60,7 @@ const InstructorProfile = () => {
 				<Image height={'35dvh'} src={`https://fakeimg.pl/200x100/?retina=1&text=こんにちは&font=noto`} />
 				{instructor && ( 
                     <Stack direction={'row'} alignItems={'center'} marginBottom={'50px'}>
-                        <Avatar src={instructor.profile ? `https://dyci-hub-api.vercel.app/images/${instructor.profile}` : `https://picsum.photos/id/237/200/300`} sx={{
+                        <Avatar src={instructor.profile ? `http://localhost:3000/images/${instructor.profile}` : `https://picsum.photos/id/237/200/300`} sx={{
                             width: 160,
                             height: 160,
                             border: '3px solid #f2f2f2',
