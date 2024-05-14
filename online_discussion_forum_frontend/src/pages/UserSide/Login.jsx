@@ -44,15 +44,18 @@ const Login = () => {
         headers: { 'Content-Type': 'application/json' },
         withCredentials: true
       });
-  
+      
       const accessToken = response.data.token;
       const decodedToken = jwtDecode(accessToken);
       const { roles } = decodedToken;
 
-      localStorage.setItem("jwt", accessToken)
-  
-      localStorage.setItem("jwt", accessToken)
-  
+      // token saved into localstorage
+      localStorage.setItem("jwt", response.data.refreshToken)
+
+      const jwtToken = localStorage.getItem('jwt');
+
+      document.cookie = `jwt=${jwtToken}; path=/; SameSite=None; Secure`;
+
       setAuth({ email, accessToken });
       if (roles.includes("Admin")) {
         navigate('/admin/dashboard')
