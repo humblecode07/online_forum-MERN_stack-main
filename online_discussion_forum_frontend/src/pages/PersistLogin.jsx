@@ -16,7 +16,6 @@ const PersistLogin = () => {
         const verifyRefreshToken = async () => {
             try {
                 await refresh();
-                console.log('refresh', await refresh())
                 localStorage.setItem('jwt', await refresh());
             } catch (err) {
                 console.error(err);

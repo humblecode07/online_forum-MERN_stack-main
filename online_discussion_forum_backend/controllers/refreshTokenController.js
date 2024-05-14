@@ -3,18 +3,23 @@ const Instructor = require('../models/instructor')
 const jwt = require('jsonwebtoken');
 
 exports.handleRefreshToken = async (req, res) => {
-    const cookies = req.cookies;
-    console.log('cookies', cookies?.jwt)
-    if (!cookies?.jwt) return res.sendStatus(401);
+    const authHeader = req.headers['authorization'];
+    let token;
 
-    const refreshToken = cookies.jwt;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+        token = authHeader.split(' ')[1];
+    } else {
+        return res.sendStatus(401); 
+    }
 
-    const foundUser = await User.findOne({ refreshToken }).exec();
-    const foundInstructor = await Instructor.findOne({ refreshToken }).exec();
+    const foundUser = await User.findOne({ refreshToken: token }).exec();
+    const foundInstructor = await Instructor.findOne({ refreshToken: token }).exec();
     
+    console.log(token)
+
     if (foundUser) {
         jwt.verify(
-            refreshToken,
+            token,
             process.env.REFRESH_JWT_KEY,
             (err, decoded) => {
                 if (err || foundUser.email !== decoded.email) return res.sendStatus(403);
@@ -35,7 +40,7 @@ exports.handleRefreshToken = async (req, res) => {
     }
     else if (foundInstructor) {
         jwt.verify(
-            refreshToken,
+            token,
             process.env.REFRESH_JWT_KEY,
             (err, decoded) => {
                 if (err || foundInstructor.email !== decoded.email) return res.sendStatus(403);

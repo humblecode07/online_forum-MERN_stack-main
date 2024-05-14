@@ -8,6 +8,9 @@ const useRefreshToken = () => {
 
   const refresh = async () => {
     const response = await axios.get('/refresh', {
+      headers: {
+        Authorization: `Bearer ${jwtToken}`
+      },
       withCredentials: true
     });
 
