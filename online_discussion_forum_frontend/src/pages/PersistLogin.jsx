@@ -15,7 +15,6 @@ const PersistLogin = () => {
 
         const verifyRefreshToken = async () => {
             try {
-                await refresh();
                 localStorage.setItem('jwt', await refresh());
             } catch (err) {
                 console.error(err);
@@ -24,7 +23,7 @@ const PersistLogin = () => {
             }
         };
 
-        !auth?.accessToken && persist ? verifyRefreshToken() : setIsLoading(false);
+        !auth?.accessToken ? verifyRefreshToken() : setIsLoading(false);
 
         return () => {
             isMounted = false;
