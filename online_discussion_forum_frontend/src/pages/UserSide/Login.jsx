@@ -49,7 +49,7 @@ const Login = () => {
       const decodedToken = jwtDecode(accessToken);
       const { roles } = decodedToken;
   
-      console.log("User roles:", roles);
+      localStorage.setItem("jwt", accessToken)
   
       setAuth({ email, accessToken });
       if (roles.includes("Admin")) {
