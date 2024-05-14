@@ -51,7 +51,7 @@ const Login = () => {
 
       localStorage.setItem("jwt", accessToken)
   
-      console.log("User roles:", roles);
+      localStorage.setItem("jwt", accessToken)
   
       setAuth({ email, accessToken });
       if (roles.includes("Admin")) {
